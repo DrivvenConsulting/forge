@@ -122,11 +122,30 @@ bundles/
 
 Registry is versioned via Git tags or branches; Forge uses the `ref` from project config to clone or update.
 
+## Creating a registry
+
+To scaffold a new registry repo (e.g. for your team or org), run in an empty directory:
+
+```bash
+forge init --registry
+```
+
+This creates `agents/`, `rules/`, `skills/`, and `bundles/` with a `.gitkeep` in each. Add items as subdirectories with a `manifest.yaml` and the correct content file (`agent.md`, `RULE.md`, or `SKILL.md`; bundles need only `manifest.yaml`).
+
+To also add minimal example items that show the expected manifest schema and file names:
+
+```bash
+forge init --registry --with-examples
+```
+
+Do not run `forge init --registry` inside a directory that already has a Forge project (`.forge/config.yaml`) or an existing registry layout (any of the four category directories).
+
 ## Commands
 
 | Command | Description |
 |--------|-------------|
 | `forge init [--project-type TYPES] [--registry-url URL] [--registry-ref REF]` | Create `.forge/config.yaml` (TYPES can be comma-separated, e.g. `data,infra`) |
+| `forge init --registry [--with-examples]` | Scaffold a registry repo (agents/, rules/, skills/, bundles/); optional example items |
 | `forge list [--installed] [--category agent\|rule\|skill\|bundle] [--project-type TYPE]` | List available registry items or installed items (`--installed`) |
 | `forge install <kind> <id>` | Install one item or a bundle (`kind` can be `bundle`) |
 | `forge remove <kind> <id>` | Remove an installed agent, rule, or skill |
