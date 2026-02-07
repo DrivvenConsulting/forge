@@ -1,0 +1,5 @@
+project_type: backend
+registry:
+  url: https://github.com/DrivvenConsulting/forge-registry.git
+  ref: main
+installed: []
