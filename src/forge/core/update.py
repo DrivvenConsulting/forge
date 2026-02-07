@@ -7,7 +7,7 @@ from forge.core.models import ProjectConfig, RegistryItem
 from forge.core.project import load_config, save_config
 from forge.core.registry import fetch_registry, get_registry_items
 from forge.core.remove import remove_item
-from forge.core.validation import is_compatible_with_project_type
+from forge.core.validation import is_compatible_with_project_types
 
 
 def _items_by_kind_id(items: list[RegistryItem]) -> dict[tuple[str, str], RegistryItem]:
@@ -46,7 +46,7 @@ def update_item(
     if key not in items_by_kind_id:
         return False
     new_item = items_by_kind_id[key]
-    if not is_compatible_with_project_type(new_item, config.project_type):
+    if not is_compatible_with_project_types(new_item, config.project_types):
         return False
 
     remove_item(project_root, config, kind, item_id)
@@ -85,7 +85,7 @@ def update_all(project_root: Path) -> list[tuple[str, str]]:
         if key not in items_by_kind_id:
             continue
         new_item = items_by_kind_id[key]
-        if not is_compatible_with_project_type(new_item, config.project_type):
+        if not is_compatible_with_project_types(new_item, config.project_types):
             continue
         remove_item(root, config, inst.kind, inst.id)
         config = load_config(root)

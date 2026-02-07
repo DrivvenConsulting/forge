@@ -1,4 +1,5 @@
-project_type: backend
+project_types:
+  - backend
 registry:
   url: https://github.com/DrivvenConsulting/forge-registry.git
   ref: main

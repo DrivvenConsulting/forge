@@ -69,6 +69,6 @@ class RegistryConfig(BaseModel):
 class ProjectConfig(BaseModel):
     """Project-level Forge configuration (.forge/config.yaml)."""
 
-    project_type: ProjectType
+    project_types: list[ProjectType] = Field(..., min_length=1)
     registry: RegistryConfig
     installed: list[InstalledItem] = Field(default_factory=list)

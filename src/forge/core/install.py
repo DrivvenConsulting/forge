@@ -5,7 +5,6 @@ from pathlib import Path
 
 from forge.core.models import InstalledItem, ProjectConfig, RegistryItem
 from forge.core.project import load_config, save_config
-from forge.core.validation import is_compatible_with_project_type
 
 
 def _agent_dest_path(project_root: Path, item_id: str) -> Path:

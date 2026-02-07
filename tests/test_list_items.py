@@ -11,7 +11,7 @@ def test_list_items_filtered_by_project_type(registry_root: Path) -> None:
     items = list_items(
         "https://example.com/registry.git",
         "main",
-        "backend",
+        ["backend"],
         category=None,
         registry_root=registry_root,
     )
@@ -26,7 +26,7 @@ def test_list_items_filtered_by_category(registry_root: Path) -> None:
     items = list_items(
         "https://example.com/registry.git",
         "main",
-        "backend",
+        ["backend"],
         category="rule",
         registry_root=registry_root,
     )
@@ -39,7 +39,7 @@ def test_list_items_incompatible_project_type(registry_root: Path) -> None:
     items = list_items(
         "https://example.com/registry.git",
         "main",
-        "infra",
+        ["infra"],
         category=None,
         registry_root=registry_root,
     )
@@ -50,10 +50,25 @@ def test_list_items_all_items_skips_project_type_filter(registry_root: Path) -> 
     items = list_items(
         "https://example.com/registry.git",
         "main",
-        "infra",
+        ["infra"],
         category=None,
         registry_root=registry_root,
         all_items=True,
+    )
+    ids = [(i.kind, i.id) for i in items]
+    assert ("agent", "test-agent") in ids
+    assert ("rule", "test-rule") in ids
+    assert ("skill", "test-skill") in ids
+    assert ("bundle", "test-bundle") in ids
+
+
+def test_list_items_multiple_project_types(registry_root: Path) -> None:
+    items = list_items(
+        "https://example.com/registry.git",
+        "main",
+        ["data", "infra"],
+        category=None,
+        registry_root=registry_root,
     )
     ids = [(i.kind, i.id) for i in items]
     assert ("agent", "test-agent") in ids

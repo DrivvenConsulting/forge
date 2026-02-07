@@ -12,19 +12,21 @@ No PyPI release for MVP.
 
 ## Quick start
 
-1. In your project directory, initialize Forge with a project type:
+1. In your project directory, initialize Forge with one or more project types:
 
    ```bash
    forge init --project-type backend
+   forge init --project-type data,infra
    ```
 
-   This creates `.forge/config.yaml` with `project_type` and default registry URL.
+   This creates `.forge/config.yaml` with `project_types` and default registry URL.
 
-2. List available items (filtered by your project type):
+2. List available items (filtered by your project types) or list installed items:
 
    ```bash
    forge list
    forge list --category rule
+   forge list --installed
    ```
 
 3. Install an agent, rule, skill, or bundle:
@@ -44,14 +46,17 @@ No PyPI release for MVP.
 
 ## Project config (`.forge/config.yaml`)
 
-- **project_type**: One of `data`, `backend`, `frontend`, `infra`. Only registry items that list this type in their `project_types` can be listed or installed.
+- **project_types**: List of one or more of `data`, `backend`, `frontend`, `infra`. Registry items whose `project_types` include any of these can be listed or installed. Use multiple types for mixed projects (e.g. `[data, infra]` for data + devops).
 - **registry**: `url` (Git clone URL) and optional `ref` (branch or tag, default `main`).
 - **installed**: List of installed items with `kind`, `id`, `version`, and `source_registry_ref` (filled by Forge).
+
+Configs with the legacy key `project_type` (singular) are still supported and treated as a single-type project.
 
 Example:
 
 ```yaml
-project_type: backend
+project_types:
+  - backend
 registry:
   url: https://github.com/DrivvenConsulting/forge-registry.git
   ref: main
@@ -108,8 +113,8 @@ Registry is versioned via Git tags or branches; Forge uses the `ref` from projec
 
 | Command | Description |
 |--------|-------------|
-| `forge init [--project-type TYPE] [--registry-url URL] [--registry-ref REF]` | Create `.forge/config.yaml` |
-| `forge list [--category agent\|rule\|skill\|bundle] [--project-type TYPE]` | List available items |
+| `forge init [--project-type TYPES] [--registry-url URL] [--registry-ref REF]` | Create `.forge/config.yaml` (TYPES can be comma-separated, e.g. `data,infra`) |
+| `forge list [--installed] [--category agent\|rule\|skill\|bundle] [--project-type TYPE]` | List available registry items or installed items (`--installed`) |
 | `forge install <kind> <id>` | Install one item or a bundle (`kind` can be `bundle`) |
 | `forge remove <kind> <id>` | Remove an installed agent, rule, or skill |
 | `forge update` | Update all installed items |
@@ -135,7 +140,7 @@ from forge.core import (
 project_root = find_project_root()
 config = load_config(project_root)
 registry_root = fetch_registry(config.registry.url, config.registry.ref)
-items = list_items(config.registry.url, config.registry.ref, config.project_type)
+items = list_items(config.registry.url, config.registry.ref, config.project_types)
 # ... install_item, remove_item, update_all, etc.
 ```
 

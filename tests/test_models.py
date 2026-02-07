@@ -44,10 +44,10 @@ def test_registry_item() -> None:
 
 def test_project_config() -> None:
     c = ProjectConfig(
-        project_type="backend",
+        project_types=["backend"],
         registry=RegistryConfig(url="https://x.git", ref="main"),
         installed=[InstalledItem(kind="rule", id="r1", version="1.0.0", source_registry_ref="main")],
     )
-    assert c.project_type == "backend"
+    assert c.project_types == ["backend"]
     assert len(c.installed) == 1
     assert c.installed[0].id == "r1"
