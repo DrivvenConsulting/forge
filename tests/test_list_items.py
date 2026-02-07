@@ -44,3 +44,19 @@ def test_list_items_incompatible_project_type(registry_root: Path) -> None:
         registry_root=registry_root,
     )
     assert len(items) == 0
+
+
+def test_list_items_all_items_skips_project_type_filter(registry_root: Path) -> None:
+    items = list_items(
+        "https://example.com/registry.git",
+        "main",
+        "infra",
+        category=None,
+        registry_root=registry_root,
+        all_items=True,
+    )
+    ids = [(i.kind, i.id) for i in items]
+    assert ("agent", "test-agent") in ids
+    assert ("rule", "test-rule") in ids
+    assert ("skill", "test-skill") in ids
+    assert ("bundle", "test-bundle") in ids

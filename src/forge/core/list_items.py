@@ -13,6 +13,7 @@ def list_items(
     project_type: ProjectType,
     category: ItemKind | None = None,
     registry_root: Path | None = None,
+    all_items: bool = False,
 ) -> list[RegistryItem]:
     """List available registry items compatible with project_type, optionally filtered by kind.
 
@@ -22,9 +23,10 @@ def list_items(
     Args:
         registry_url: Git URL of the registry.
         registry_ref: Branch or tag to use.
-        project_type: Only return items whose project_types include this.
+        project_type: Only return items whose project_types include this (ignored if all_items is True).
         category: If set, only return items of this kind (agent, rule, skill, bundle).
         registry_root: Optional path to existing registry clone; if set, url/ref are ignored.
+        all_items: If True, return all items without project-type filtering.
 
     Returns:
         List of matching registry items.
@@ -36,8 +38,9 @@ def list_items(
         root = Path(registry_root)
     else:
         root = fetch_registry(registry_url, registry_ref)
-    all_items = get_registry_items(root)
-    filtered = [i for i in all_items if is_compatible_with_project_type(i, project_type)]
+    items = get_registry_items(root)
+    if not all_items:
+        items = [i for i in items if is_compatible_with_project_type(i, project_type)]
     if category is not None:
-        filtered = [i for i in filtered if i.kind == category]
-    return filtered
+        items = [i for i in items if i.kind == category]
+    return items
