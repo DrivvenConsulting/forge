@@ -4,13 +4,26 @@ CLI for managing AI agents, rules, and skills from a centralized, versioned regi
 
 ## Install
 
+Using [uv](https://docs.astral.sh/uv/) (recommended):
+
 ```bash
-pip install git+https://github.com/<org>/forge.git
+# Install forge globally (available as `forge`)
+uv tool install forge-cli --from git+https://github.com/<org>/forge.git
+```
+
+Or add it as a dependency in your project and run via `uv run`:
+
+```bash
+# From your project root (with a pyproject.toml)
+uv add --git https://github.com/<org>/forge.git forge-cli
+uv run forge init --project-type backend
 ```
 
 No PyPI release for MVP.
 
 ## Quick start
+
+If you added Forge as a project dependency with `uv add`, run every command as `uv run forge ...` instead of `forge`.
 
 1. In your project directory, initialize Forge with one or more project types:
 
@@ -146,11 +159,11 @@ items = list_items(config.registry.url, config.registry.ref, config.project_type
 
 ## Development and tests
 
-Install with dev dependencies and run tests:
+With uv, from the forge repo root:
 
 ```bash
-pip install -e ".[dev]"
-pytest tests -v
+uv sync --all-extras
+uv run pytest tests -v
 ```
 
 ## License
