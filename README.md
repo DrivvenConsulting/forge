@@ -140,6 +140,24 @@ forge init --registry --with-examples
 
 Do not run `forge init --registry` inside a directory that already has a Forge project (`.forge/config.yaml`) or an existing registry layout (any of the four category directories).
 
+## Creator skills (base skills in the registry)
+
+The **forge-registry** repo includes three **base skills** that guide creation of new agents, rules, and skills in the correct Forge format. They are available for all project types (`data`, `backend`, `frontend`, `infra`). Install them like any other skill:
+
+```bash
+forge install skill create-forge-agent
+forge install skill create-forge-rule
+forge install skill create-forge-skill
+```
+
+| Skill | Purpose |
+|-------|---------|
+| **create-forge-agent** | Create a new agent (`agents/<id>/manifest.yaml` + `agent.md`) |
+| **create-forge-rule** | Create a new rule (`rules/<id>/manifest.yaml` + `RULE.md`) |
+| **create-forge-skill** | Create a new skill (`skills/<id>/manifest.yaml` + `SKILL.md`) |
+
+After install, they live in `.cursor/skills/<id>/SKILL.md`. In Cursor, ask in natural language (e.g. “Create a new Forge rule for FastAPI backend standards” or “Scaffold a Forge skill for code review”); the agent will use the matching skill and produce the correct registry layout.
+
 ## Commands
 
 | Command | Description |
