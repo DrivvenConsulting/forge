@@ -6,7 +6,7 @@ import typer
 
 
 def update_cmd(
-    kind: str | None = typer.Argument(None, help="agent, rule, or skill (omit to update all)"),
+    kind: str | None = typer.Argument(None, help="agent, rule, skill, workflow, or prompt (omit to update all)"),
     item_id: str | None = typer.Argument(None, help="Item id (required if kind is set)"),
 ) -> None:
     """Update all installed items, or a single item if kind and id are given."""
@@ -29,8 +29,8 @@ def update_cmd(
         for k, i in updated:
             typer.echo(f"Updated {k} {i}.")
         return
-    if kind not in ("agent", "rule", "skill"):
-        typer.echo("Kind must be agent, rule, or skill.", err=True)
+    if kind not in ("agent", "rule", "skill", "workflow", "prompt"):
+        typer.echo("Kind must be agent, rule, skill, workflow, or prompt.", err=True)
         raise typer.Exit(1)
     project_root = find_project_root()
     if project_root is None:

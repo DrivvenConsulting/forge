@@ -3,7 +3,13 @@
 import shutil
 from pathlib import Path
 
-from forge.core.install import _agent_dest_path, _rule_dest_path, _skill_dest_path
+from forge.core.install import (
+    _agent_dest_path,
+    _prompt_dest_path,
+    _rule_dest_path,
+    _skill_dest_path,
+    _workflow_dest_path,
+)
 from forge.core.models import InstalledItem, ProjectConfig
 from forge.core.project import save_config
 
@@ -19,7 +25,7 @@ def remove_item(
     Args:
         project_root: Project root (contains .forge/ and .cursor/).
         config: Current project config (will be updated and saved).
-        kind: One of agent, rule, skill.
+        kind: One of agent, rule, skill, workflow, prompt.
         item_id: Id of the installed item.
 
     Returns:
@@ -32,6 +38,10 @@ def remove_item(
         dest = _rule_dest_path(root, item_id)
     elif kind == "skill":
         dest = _skill_dest_path(root, item_id)
+    elif kind == "workflow":
+        dest = _workflow_dest_path(root, item_id)
+    elif kind == "prompt":
+        dest = _prompt_dest_path(root, item_id)
     else:
         raise ValueError(f"Invalid kind: {kind}")
 
@@ -52,6 +62,12 @@ def remove_item(
         parent = dest.parent
         if parent.exists() and parent.is_dir():
             shutil.rmtree(parent, ignore_errors=True)
+    if kind == "prompt" and dest.parent.exists() and dest.parent.is_dir():
+        try:
+            if not any(dest.parent.iterdir()):
+                dest.parent.rmdir()
+        except OSError:
+            pass
 
     config.installed.pop(found)
     save_config(project_root, config)

@@ -22,6 +22,16 @@ def _skill_dest_path(project_root: Path, item_id: str) -> Path:
     return project_root / ".cursor" / "skills" / item_id / "SKILL.md"
 
 
+def _workflow_dest_path(project_root: Path, item_id: str) -> Path:
+    """Path for installed workflow: .cursor/workflows/<id>/"""
+    return project_root / ".cursor" / "workflows" / item_id
+
+
+def _prompt_dest_path(project_root: Path, item_id: str) -> Path:
+    """Path for installed prompt: .cursor/prompts/<id>.md (id may contain /)."""
+    return project_root / ".cursor" / "prompts" / f"{item_id}.md"
+
+
 def _copy_agent(registry_root: Path, item: RegistryItem, project_root: Path) -> None:
     """Copy agent content (first .md file) to .cursor/agents/<id>.md."""
     src_dir = registry_root / item.path
@@ -53,6 +63,30 @@ def _copy_skill(registry_root: Path, item: RegistryItem, project_root: Path) -> 
     shutil.copy2(src_file, dest_file)
 
 
+def _copy_workflow(registry_root: Path, item: RegistryItem, project_root: Path) -> None:
+    """Copy WORKFLOW.md and manifest.yaml to .cursor/workflows/<id>/."""
+    src_dir = registry_root / item.path
+    dest_dir = _workflow_dest_path(project_root, item.id)
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    workflow_md = src_dir / "WORKFLOW.md"
+    manifest_yaml = src_dir / "manifest.yaml"
+    if not workflow_md.exists():
+        raise FileNotFoundError(f"WORKFLOW.md not found in {src_dir}")
+    shutil.copy2(workflow_md, dest_dir / "WORKFLOW.md")
+    if manifest_yaml.exists():
+        shutil.copy2(manifest_yaml, dest_dir / "manifest.yaml")
+
+
+def _copy_prompt(registry_root: Path, item: RegistryItem, project_root: Path) -> None:
+    """Copy prompt .md file to .cursor/prompts/<id>.md."""
+    src_file = registry_root / item.path
+    if not src_file.exists():
+        raise FileNotFoundError(f"Prompt file not found: {src_file}")
+    dest_file = _prompt_dest_path(project_root, item.id)
+    dest_file.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src_file, dest_file)
+
+
 def _install_single_item(
     registry_root: Path,
     item: RegistryItem,
@@ -60,15 +94,19 @@ def _install_single_item(
     config: ProjectConfig,
     source_ref: str,
 ) -> None:
-    """Copy one agent/rule/skill and append to config.installed. Caller must save config."""
+    """Copy one agent/rule/skill/workflow/prompt and append to config.installed. Caller must save config."""
     if item.kind == "agent":
         _copy_agent(registry_root, item, project_root)
     elif item.kind == "rule":
         _copy_rule(registry_root, item, project_root)
     elif item.kind == "skill":
         _copy_skill(registry_root, item, project_root)
+    elif item.kind == "workflow":
+        _copy_workflow(registry_root, item, project_root)
+    elif item.kind == "prompt":
+        _copy_prompt(registry_root, item, project_root)
     else:
-        raise ValueError(f"Expected agent, rule, or skill; got {item.kind}")
+        raise ValueError(f"Expected agent, rule, skill, workflow, or prompt; got {item.kind}")
     config.installed.append(
         InstalledItem(
             kind=item.kind,
@@ -86,11 +124,11 @@ def install_item(
     config: ProjectConfig,
     source_ref: str,
 ) -> None:
-    """Install a single agent, rule, or skill. Updates config and saves.
+    """Install a single agent, rule, skill, workflow, or prompt. Updates config and saves.
 
     Args:
         registry_root: Path to cloned registry repo.
-        item: Registry item (must be agent, rule, or skill).
+        item: Registry item (must be agent, rule, skill, workflow, or prompt).
         project_root: Project root (contains .forge/).
         config: Current project config (will be updated and saved).
         source_ref: Git ref used for this install (e.g. main).

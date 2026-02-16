@@ -4,11 +4,11 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-ItemKind = Literal["agent", "rule", "skill", "bundle"]
+ItemKind = Literal["agent", "rule", "skill", "bundle", "workflow", "prompt"]
 ProjectType = Literal["data", "backend", "frontend", "infra"]
 
 PROJECT_TYPES: tuple[ProjectType, ...] = ("data", "backend", "frontend", "infra")
-ITEM_KINDS: tuple[ItemKind, ...] = ("agent", "rule", "skill", "bundle")
+ITEM_KINDS: tuple[ItemKind, ...] = ("agent", "rule", "skill", "bundle", "workflow", "prompt")
 
 
 class ItemManifest(BaseModel):
@@ -53,7 +53,7 @@ class RegistryItem(BaseModel):
 class InstalledItem(BaseModel):
     """Record of an installed item in project config."""
 
-    kind: Literal["agent", "rule", "skill"]
+    kind: Literal["agent", "rule", "skill", "workflow", "prompt"]
     id: str = Field(..., min_length=1)
     version: str = Field(..., min_length=1)
     source_registry_ref: str = Field(..., description="Git ref used at install time, e.g. main or v1.0.0")

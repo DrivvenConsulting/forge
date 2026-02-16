@@ -1,4 +1,4 @@
-"""forge list: list available agents, rules, skills, and bundles."""
+"""forge list: list available agents, rules, skills, bundles, workflows, and prompts."""
 
 from typing import cast
 
@@ -12,12 +12,12 @@ from forge.core.project import find_project_root, load_config
 
 
 def list_cmd(
-    category: ItemKind | None = typer.Option(None, "--category", "-c", help="Filter by kind: agent, rule, skill, bundle"),
+    category: ItemKind | None = typer.Option(None, "--category", "-c", help="Filter by kind: agent, rule, skill, bundle, workflow, prompt"),
     project_type: str | None = typer.Option(None, "--project-type", "-p", help="Override project type (data, backend, frontend, infra)"),
     all_items: bool = typer.Option(False, "--all", "-a", help="Show all items, not only those for current project type"),
     installed: bool = typer.Option(False, "--installed", "-i", help="List installed items in this project"),
 ) -> None:
-    """List available agents, rules, skills, and bundles from the registry."""
+    """List available agents, rules, skills, bundles, workflows, and prompts from the registry."""
     project_root = find_project_root()
     if project_root is None:
         typer.echo("Not in a Forge project. Run 'forge init' first.", err=True)

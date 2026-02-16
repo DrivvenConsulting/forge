@@ -8,12 +8,12 @@ import typer
 
 
 def install_cmd(
-    kind: str = typer.Argument(..., help="agent, rule, skill, or bundle"),
+    kind: str = typer.Argument(..., help="agent, rule, skill, bundle, workflow, or prompt"),
     item_id: str = typer.Argument(..., help="Item id"),
 ) -> None:
-    """Install an agent, rule, skill, or bundle from the registry."""
-    if kind not in ("agent", "rule", "skill", "bundle"):
-        typer.echo(f"Kind must be agent, rule, skill, or bundle; got {kind}.", err=True)
+    """Install an agent, rule, skill, bundle, workflow, or prompt from the registry."""
+    if kind not in ("agent", "rule", "skill", "bundle", "workflow", "prompt"):
+        typer.echo(f"Kind must be agent, rule, skill, bundle, workflow, or prompt; got {kind}.", err=True)
         raise typer.Exit(1)
     project_root = find_project_root()
     if project_root is None:

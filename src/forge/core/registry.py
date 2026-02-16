@@ -12,15 +12,18 @@ from forge.core.models import (
     BundleManifest,
     ItemKind,
     ItemManifest,
+    PROJECT_TYPES,
     RegistryItem,
 )
 
-REGISTRY_CATEGORIES: tuple[str, ...] = ("agents", "rules", "skills", "bundles")
+REGISTRY_CATEGORIES: tuple[str, ...] = ("agents", "rules", "skills", "bundles", "workflows", "prompts")
 KIND_FROM_DIR: dict[str, ItemKind] = {
     "agents": "agent",
     "rules": "rule",
     "skills": "skill",
     "bundles": "bundle",
+    "workflows": "workflow",
+    "prompts": "prompt",
 }
 
 
@@ -159,7 +162,7 @@ def get_registry_items(registry_root: Path) -> list[RegistryItem]:
         registry_root: Path to the cloned registry repo root.
 
     Returns:
-        List of all registry items (agents, rules, skills, bundles).
+        List of all registry items (agents, rules, skills, bundles, workflows, prompts).
     """
     registry_root = Path(registry_root)
     result: list[RegistryItem] = []
@@ -169,6 +172,27 @@ def get_registry_items(registry_root: Path) -> list[RegistryItem]:
         dir_path = registry_root / category
         if not dir_path.is_dir():
             continue
+
+        if kind == "prompt":
+            for md_path in dir_path.rglob("*.md"):
+                if md_path.name == "README.md":
+                    continue
+                rel = md_path.relative_to(dir_path)
+                item_id = str(rel.with_suffix(""))
+                path_str = f"{category}/{rel}"
+                result.append(
+                    RegistryItem(
+                        kind="prompt",
+                        id=item_id,
+                        version="1.0.0",
+                        project_types=list(PROJECT_TYPES),
+                        description=None,
+                        path=path_str,
+                        items=None,
+                    )
+                )
+            continue
+
         for item_dir in dir_path.iterdir():
             if not item_dir.is_dir():
                 continue

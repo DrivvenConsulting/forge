@@ -26,14 +26,14 @@ def update_item(
     Args:
         project_root: Project root.
         config: Current project config.
-        kind: agent, rule, or skill.
+        kind: agent, rule, skill, workflow, or prompt.
         item_id: Id of the installed item.
 
     Returns:
         True if the item was installed and updated; False if not in installed list.
     """
     root = Path(project_root)
-    if kind not in ("agent", "rule", "skill"):
+    if kind not in ("agent", "rule", "skill", "workflow", "prompt"):
         raise ValueError(f"Invalid kind: {kind}")
     inst = next((i for i in config.installed if i.kind == kind and i.id == item_id), None)
     if inst is None:

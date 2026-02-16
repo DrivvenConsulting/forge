@@ -1,4 +1,4 @@
-"""Scaffold a new Forge registry repo (agents/, rules/, skills/, bundles/)."""
+"""Scaffold a new Forge registry repo (agents/, rules/, skills/, bundles/, workflows/, prompts/)."""
 
 import yaml
 from pathlib import Path
@@ -13,7 +13,7 @@ def is_registry_root(path: Path) -> bool:
         path: Directory to check (e.g. current working directory).
 
     Returns:
-        True if any of agents/, rules/, skills/, or bundles/ exist under path.
+        True if any of agents/, rules/, skills/, bundles/, workflows/, or prompts/ exist under path.
     """
     root = Path(path).resolve()
     if not root.is_dir():
@@ -24,7 +24,7 @@ def is_registry_root(path: Path) -> bool:
 def scaffold_registry(root: Path, with_examples: bool = False) -> None:
     """Create registry directory layout and optionally example items.
 
-    Creates agents/, rules/, skills/, bundles/ with a .gitkeep in each.
+    Creates agents/, rules/, skills/, bundles/, workflows/, prompts/ with a .gitkeep in each.
     If with_examples is True, adds one minimal example item per category
     with valid manifest.yaml and placeholder content files.
 

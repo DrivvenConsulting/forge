@@ -33,7 +33,7 @@ def registry_root(tmp_path: Path) -> Path:
     rule_dir = root / "rules" / "test-rule"
     rule_dir.mkdir(parents=True)
     (rule_dir / "manifest.yaml").write_text(
-        "version: '1.0.0'\nproject_types: [backend]\ndescription: Test rule\n",
+        "version: '1.0.0'\nproject_types: [backend, data]\ndescription: Test rule\n",
         encoding="utf-8",
     )
     (rule_dir / "RULE.md").write_text("# Test Rule\n", encoding="utf-8")
@@ -41,7 +41,7 @@ def registry_root(tmp_path: Path) -> Path:
     skill_dir = root / "skills" / "test-skill"
     skill_dir.mkdir(parents=True)
     (skill_dir / "manifest.yaml").write_text(
-        "version: '1.0.0'\nproject_types: [backend, frontend]\ndescription: Test skill\n",
+        "version: '1.0.0'\nproject_types: [backend, frontend, data]\ndescription: Test skill\n",
         encoding="utf-8",
     )
     (skill_dir / "SKILL.md").write_text("# Test Skill\n", encoding="utf-8")
@@ -49,7 +49,7 @@ def registry_root(tmp_path: Path) -> Path:
     bundle_dir = root / "bundles" / "test-bundle"
     bundle_dir.mkdir(parents=True)
     (bundle_dir / "manifest.yaml").write_text(
-        "version: '1.0.0'\nproject_types: [backend]\nitems:\n  - kind: rule\n    id: test-rule\n  - kind: skill\n    id: test-skill\n",
+        "version: '1.0.0'\nproject_types: [backend, data]\nitems:\n  - kind: rule\n    id: test-rule\n  - kind: skill\n    id: test-skill\n",
         encoding="utf-8",
     )
 

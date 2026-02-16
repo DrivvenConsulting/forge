@@ -6,12 +6,12 @@ import typer
 
 
 def remove_cmd(
-    kind: str = typer.Argument(..., help="agent, rule, or skill"),
+    kind: str = typer.Argument(..., help="agent, rule, skill, workflow, or prompt"),
     item_id: str = typer.Argument(..., help="Item id"),
 ) -> None:
-    """Remove an installed agent, rule, or skill."""
-    if kind not in ("agent", "rule", "skill"):
-        typer.echo("Kind must be agent, rule, or skill.", err=True)
+    """Remove an installed agent, rule, skill, workflow, or prompt."""
+    if kind not in ("agent", "rule", "skill", "workflow", "prompt"):
+        typer.echo("Kind must be agent, rule, skill, workflow, or prompt.", err=True)
         raise typer.Exit(1)
     project_root = find_project_root()
     if project_root is None:
