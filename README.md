@@ -8,7 +8,7 @@ Using [uv](https://docs.astral.sh/uv/) (recommended):
 
 ```bash
 # Install forge globally (available as `forge`)
-uv tool install forge-cli --from git+https://github.com/<org>/forge.git
+uv tool install forge-cli --from git+https://github.com/<org>/forge.git](https://github.com/DrivvenConsulting/forge.git
 ```
 
 Or add it as a dependency in your project and run via `uv run`:
