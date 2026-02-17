@@ -15,7 +15,7 @@ Or add it as a dependency in your project and run via `uv run`:
 
 ```bash
 # From your project root (with a pyproject.toml)
-uv add --git https://github.com/<org>/forge.git forge-cli
+uv add --git https://github.com/DrivvenConsulting/forge.git
 uv run forge init --project-type backend
 ```
 
