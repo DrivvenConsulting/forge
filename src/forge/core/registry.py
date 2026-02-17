@@ -138,11 +138,15 @@ def _parse_bundle_manifest(manifest_path: Path) -> BundleManifest | None:
     if not data or "version" not in data or "project_types" not in data or "items" not in data:
         return None
     try:
-        items = [
-            BundleItemRef(kind=ref["kind"], id=ref["id"])
-            for ref in data["items"]
-            if isinstance(ref, dict) and ref.get("kind") in ("agent", "rule", "skill") and ref.get("id")
-        ]
+        items: list[BundleItemRef] = []
+        for ref in data["items"]:
+            if not isinstance(ref, dict):
+                continue
+            kind = ref.get("kind")
+            item_id = ref.get("id")
+            if kind not in ("agent", "rule", "skill", "workflow", "prompt") or not item_id:
+                continue
+            items.append(BundleItemRef(kind=kind, id=item_id))
         if not items:
             return None
         return BundleManifest(

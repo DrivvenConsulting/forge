@@ -22,7 +22,7 @@ class ItemManifest(BaseModel):
 class BundleItemRef(BaseModel):
     """Reference to an item inside a bundle."""
 
-    kind: Literal["agent", "rule", "skill"]
+    kind: Literal["agent", "rule", "skill", "workflow", "prompt"]
     id: str = Field(..., min_length=1)
 
 
