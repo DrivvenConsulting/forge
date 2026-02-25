@@ -75,3 +75,16 @@ def test_list_items_multiple_project_types(registry_root: Path) -> None:
     assert ("rule", "test-rule") in ids
     assert ("skill", "test-skill") in ids
     assert ("bundle", "test-bundle") in ids
+
+
+def test_list_items_filtered_by_product_type(registry_root: Path) -> None:
+    """test-skill in conftest has project_types [backend, frontend, data, product]."""
+    items = list_items(
+        "https://example.com/registry.git",
+        "main",
+        ["product"],
+        category=None,
+        registry_root=registry_root,
+    )
+    ids = [(i.kind, i.id) for i in items]
+    assert ("skill", "test-skill") in ids

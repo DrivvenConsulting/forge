@@ -5,9 +5,9 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 ItemKind = Literal["agent", "rule", "skill", "bundle", "workflow", "prompt"]
-ProjectType = Literal["data", "backend", "frontend", "infra"]
+ProjectType = Literal["data", "backend", "frontend", "infra", "product"]
 
-PROJECT_TYPES: tuple[ProjectType, ...] = ("data", "backend", "frontend", "infra")
+PROJECT_TYPES: tuple[ProjectType, ...] = ("data", "backend", "frontend", "infra", "product")
 ITEM_KINDS: tuple[ItemKind, ...] = ("agent", "rule", "skill", "bundle", "workflow", "prompt")
 
 

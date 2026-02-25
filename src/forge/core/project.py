@@ -56,7 +56,7 @@ def _coerce_project_config(data: dict) -> ProjectConfig:
         project_types = [str(t).strip() for t in raw_types if t]
     else:
         project_types = [str(data.get("project_type", "backend"))]
-    project_types = [t for t in project_types if t in ("data", "backend", "frontend", "infra")]
+    project_types = [t for t in project_types if t in ("data", "backend", "frontend", "infra", "product")]
     if not project_types:
         project_types = ["backend"]
     return ProjectConfig(

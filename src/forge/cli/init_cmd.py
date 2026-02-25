@@ -17,7 +17,7 @@ def init_cmd(
         "backend",
         "--project-type",
         "-p",
-        help="Comma-separated project types: data, backend, frontend, infra",
+        help="Comma-separated project types: data, backend, frontend, infra, product",
     ),
     registry_url: str = typer.Option(
         DEFAULT_REGISTRY_URL,
@@ -65,11 +65,11 @@ def init_cmd(
         typer.echo(f"Forge is already initialized in {existing}.", err=True)
         raise typer.Exit(1)
     raw = [t.strip() for t in project_type.split(",") if t.strip()]
-    valid = ("data", "backend", "frontend", "infra")
+    valid = ("data", "backend", "frontend", "infra", "product")
     project_types = []
     for t in raw:
         if t not in valid:
-            typer.echo(f"Invalid project type: {t}. Use data, backend, frontend, or infra.", err=True)
+            typer.echo(f"Invalid project type: {t}. Use data, backend, frontend, infra, or product.", err=True)
             raise typer.Exit(1)
         if t not in project_types:
             project_types.append(t)

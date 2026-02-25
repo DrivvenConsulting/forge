@@ -55,3 +55,29 @@ def test_load_config_legacy_project_type(tmp_path: Path) -> None:
     loaded = load_config(tmp_path)
     assert loaded is not None
     assert loaded.project_types == ["data"]
+
+
+def test_load_save_config_product_type(tmp_path: Path) -> None:
+    forge_dir = tmp_path / ".forge"
+    forge_dir.mkdir()
+    config = ProjectConfig(
+        project_types=["product"],
+        registry=RegistryConfig(url="https://registry.git", ref="main"),
+        installed=[],
+    )
+    save_config(tmp_path, config)
+    loaded = load_config(tmp_path)
+    assert loaded is not None
+    assert loaded.project_types == ["product"]
+
+
+def test_load_config_legacy_project_type_product(tmp_path: Path) -> None:
+    forge_dir = tmp_path / ".forge"
+    forge_dir.mkdir()
+    (forge_dir / "config.yaml").write_text(
+        "project_type: product\nregistry:\n  url: https://x.git\n  ref: main\ninstalled: []\n",
+        encoding="utf-8",
+    )
+    loaded = load_config(tmp_path)
+    assert loaded is not None
+    assert loaded.project_types == ["product"]

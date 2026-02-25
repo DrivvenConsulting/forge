@@ -59,7 +59,7 @@ If you added Forge as a project dependency with `uv add`, run every command as `
 
 ## Project config (`.forge/config.yaml`)
 
-- **project_types**: List of one or more of `data`, `backend`, `frontend`, `infra`. Registry items whose `project_types` include any of these can be listed or installed. Use multiple types for mixed projects (e.g. `[data, infra]` for data + devops).
+- **project_types**: List of one or more of `data`, `backend`, `frontend`, `infra`, `product`. Registry items whose `project_types` include any of these can be listed or installed. Use multiple types for mixed projects (e.g. `[data, infra]` for data + devops).
 - **registry**: `url` (Git clone URL) and optional `ref` (branch or tag, default `main`).
 - **installed**: List of installed items with `kind`, `id`, `version`, and `source_registry_ref` (filled by Forge).
 
@@ -113,7 +113,7 @@ bundles/
 **Item manifest** (`manifest.yaml` for agents, rules, skills):
 
 - `version`: string (e.g. `1.0.0`)
-- `project_types`: list of strings (`data`, `backend`, `frontend`, `infra`)
+- `project_types`: list of strings (`data`, `backend`, `frontend`, `infra`, `product`)
 - `description`: optional string
 
 **Bundle manifest** adds:
@@ -142,7 +142,7 @@ Do not run `forge init --registry` inside a directory that already has a Forge p
 
 ## Creator skills (base skills in the registry)
 
-The **forge-registry** repo includes three **base skills** that guide creation of new agents, rules, and skills in the correct Forge format. They are available for all project types (`data`, `backend`, `frontend`, `infra`). Install them like any other skill:
+The **forge-registry** repo includes three **base skills** that guide creation of new agents, rules, and skills in the correct Forge format. They are available for all project types (`data`, `backend`, `frontend`, `infra`, `product`). Install them like any other skill:
 
 ```bash
 forge install skill create-forge-agent

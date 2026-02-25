@@ -13,7 +13,7 @@ from forge.core.project import find_project_root, load_config
 
 def list_cmd(
     category: ItemKind | None = typer.Option(None, "--category", "-c", help="Filter by kind: agent, rule, skill, bundle, workflow, prompt"),
-    project_type: str | None = typer.Option(None, "--project-type", "-p", help="Override project type (data, backend, frontend, infra)"),
+    project_type: str | None = typer.Option(None, "--project-type", "-p", help="Override project type (data, backend, frontend, infra, product)"),
     all_items: bool = typer.Option(False, "--all", "-a", help="Show all items, not only those for current project type"),
     installed: bool = typer.Option(False, "--installed", "-i", help="List installed items in this project"),
 ) -> None:
@@ -46,8 +46,8 @@ def list_cmd(
         return
 
     if project_type is not None:
-        if project_type not in ("data", "backend", "frontend", "infra"):
-            typer.echo(f"Invalid project type: {project_type}. Use data, backend, frontend, or infra.", err=True)
+        if project_type not in ("data", "backend", "frontend", "infra", "product"):
+            typer.echo(f"Invalid project type: {project_type}. Use data, backend, frontend, infra, or product.", err=True)
             raise typer.Exit(1)
         project_types = [cast(ProjectType, project_type)]
     else:

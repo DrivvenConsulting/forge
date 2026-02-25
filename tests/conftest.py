@@ -41,7 +41,7 @@ def registry_root(tmp_path: Path) -> Path:
     skill_dir = root / "skills" / "test-skill"
     skill_dir.mkdir(parents=True)
     (skill_dir / "manifest.yaml").write_text(
-        "version: '1.0.0'\nproject_types: [backend, frontend, data]\ndescription: Test skill\n",
+        "version: '1.0.0'\nproject_types: [backend, frontend, data, product]\ndescription: Test skill\n",
         encoding="utf-8",
     )
     (skill_dir / "SKILL.md").write_text("# Test Skill\n", encoding="utf-8")

@@ -27,6 +27,7 @@ def scaffold_registry(root: Path, with_examples: bool = False) -> None:
     Creates agents/, rules/, skills/, bundles/, workflows/, prompts/ with a .gitkeep in each.
     If with_examples is True, adds one minimal example item per category
     with valid manifest.yaml and placeholder content files.
+    Example manifests use project_types: ["backend"]; valid values are data, backend, frontend, infra, product.
 
     Args:
         root: Directory to create the registry in (e.g. Path.cwd()).

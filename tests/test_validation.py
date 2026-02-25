@@ -38,4 +38,18 @@ def test_is_compatible_with_project_types() -> None:
 def test_is_valid_project_type() -> None:
     assert is_valid_project_type("backend") is True
     assert is_valid_project_type("data") is True
+    assert is_valid_project_type("product") is True
     assert is_valid_project_type("invalid") is False
+
+
+def test_is_compatible_with_project_type_product() -> None:
+    item = RegistryItem(
+        kind="agent",
+        id="idea-shaper",
+        version="1.0.0",
+        project_types=["backend", "data", "product"],
+        path="agents/idea-shaper",
+    )
+    assert is_compatible_with_project_type(item, "product") is True
+    assert is_compatible_with_project_types(item, ["product"]) is True
+    assert is_compatible_with_project_types(item, ["frontend", "product"]) is True

@@ -6,6 +6,7 @@ import pytest
 from typer.testing import CliRunner
 
 from forge.cli.main import app
+from forge.core.project import load_config
 from forge.core.registry import REGISTRY_CATEGORIES
 
 runner = CliRunner()
@@ -63,3 +64,13 @@ def test_init_project_creates_config(tmp_path: Path, monkeypatch: pytest.MonkeyP
     assert result.exit_code == 0
     assert (tmp_path / ".forge" / "config.yaml").exists()
     assert "Initialized Forge in" in result.output
+
+
+def test_init_project_with_product_type(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    result = runner.invoke(app, ["init", "--project-type", "product"])
+    assert result.exit_code == 0
+    assert (tmp_path / ".forge" / "config.yaml").exists()
+    config = load_config(tmp_path)
+    assert config is not None
+    assert config.project_types == ["product"]

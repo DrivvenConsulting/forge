@@ -51,3 +51,8 @@ def test_project_config() -> None:
     assert c.project_types == ["backend"]
     assert len(c.installed) == 1
     assert c.installed[0].id == "r1"
+
+
+def test_item_manifest_product_type() -> None:
+    m = ItemManifest(version="1.0.0", project_types=["product"], description="Product docs and issues")
+    assert m.project_types == ["product"]
