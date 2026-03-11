@@ -219,6 +219,15 @@ def get_registry_items(registry_root: Path) -> list[RegistryItem]:
                 )
             else:
                 item_manifest = _parse_item_manifest(manifest_path)
+                # Workflows: also discover by WORKFLOW.md so update works when manifest is missing/invalid
+                if item_manifest is None and kind == "workflow":
+                    workflow_md = item_dir / "WORKFLOW.md"
+                    if workflow_md.exists():
+                        item_manifest = ItemManifest(
+                            version="1.0.0",
+                            project_types=list(PROJECT_TYPES),
+                            description=None,
+                        )
                 if item_manifest is None:
                     continue
                 result.append(
