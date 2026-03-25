@@ -57,4 +57,7 @@ def test_install_bundle(registry_root: Path, project_root: Path) -> None:
     assert (project_root / ".cursor" / "skills" / "test-skill" / "SKILL.md").exists()
     config2 = load_config(project_root)
     assert config2 is not None
-    assert len(config2.installed) == 2
+    assert config2.installed == []
+    assert len(config2.installed_bundles) == 1
+    assert config2.installed_bundles[0].id == "test-bundle"
+    assert len(config2.installed_bundles[0].members) == 2

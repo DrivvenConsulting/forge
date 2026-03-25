@@ -6,7 +6,7 @@ import pytest
 from typer.testing import CliRunner
 
 from forge.cli.main import app
-from forge.core.models import InstalledItem
+from forge.core.models import BundleItemRef, InstalledBundle, InstalledItem
 from forge.core.project import load_config, save_config
 
 runner = CliRunner()
@@ -36,6 +36,26 @@ def test_list_installed_empty(project_root: Path, monkeypatch: pytest.MonkeyPatc
     result = runner.invoke(app, ["list", "--installed"])
     assert result.exit_code == 0
     assert "No installed items" in result.output
+
+
+def test_list_installed_shows_bundles(project_root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    config = load_config(project_root)
+    assert config is not None
+    config.installed_bundles = [
+        InstalledBundle(
+            id="my-bundle",
+            version="1.0.0",
+            source_registry_ref="main",
+            members=[BundleItemRef(kind="rule", id="r1")],
+        )
+    ]
+    save_config(project_root, config)
+
+    monkeypatch.chdir(project_root)
+    result = runner.invoke(app, ["list", "--installed"])
+    assert result.exit_code == 0
+    assert "my-bundle" in result.output
+    assert "bundle" in result.output
 
 
 def test_list_installed_filtered_by_category(project_root: Path, monkeypatch: pytest.MonkeyPatch) -> None:

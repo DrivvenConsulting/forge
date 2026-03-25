@@ -59,6 +59,15 @@ class InstalledItem(BaseModel):
     source_registry_ref: str = Field(..., description="Git ref used at install time, e.g. main or v1.0.0")
 
 
+class InstalledBundle(BaseModel):
+    """Record of an installed bundle (members are a snapshot for sync/remove)."""
+
+    id: str = Field(..., min_length=1)
+    version: str = Field(..., min_length=1)
+    source_registry_ref: str = Field(..., description="Git ref used at install time, e.g. main or v1.0.0")
+    members: list[BundleItemRef] = Field(..., min_length=1)
+
+
 class RegistryConfig(BaseModel):
     """Registry URL and ref from project config."""
 
@@ -72,3 +81,4 @@ class ProjectConfig(BaseModel):
     project_types: list[ProjectType] = Field(..., min_length=1)
     registry: RegistryConfig
     installed: list[InstalledItem] = Field(default_factory=list)
+    installed_bundles: list[InstalledBundle] = Field(default_factory=list)

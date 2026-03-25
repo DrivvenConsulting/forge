@@ -1,12 +1,12 @@
 """forge update: update installed items."""
 
 from forge.core.project import find_project_root, load_config
-from forge.core.update import update_all, update_item
+from forge.core.update import update_all, update_bundle, update_item
 import typer
 
 
 def update_cmd(
-    kind: str | None = typer.Argument(None, help="agent, rule, skill, workflow, or prompt (omit to update all)"),
+    kind: str | None = typer.Argument(None, help="agent, rule, skill, workflow, prompt, or bundle (omit to update all)"),
     item_id: str | None = typer.Argument(None, help="Item id (required if kind is set)"),
 ) -> None:
     """Update all installed items, or a single item if kind and id are given."""
@@ -29,8 +29,8 @@ def update_cmd(
         for k, i in updated:
             typer.echo(f"Updated {k} {i}.")
         return
-    if kind not in ("agent", "rule", "skill", "workflow", "prompt"):
-        typer.echo("Kind must be agent, rule, skill, workflow, or prompt.", err=True)
+    if kind not in ("agent", "rule", "skill", "workflow", "prompt", "bundle"):
+        typer.echo("Kind must be agent, rule, skill, workflow, prompt, or bundle.", err=True)
         raise typer.Exit(1)
     project_root = find_project_root()
     if project_root is None:
@@ -41,7 +41,10 @@ def update_cmd(
         typer.echo("No .forge/config.yaml found.", err=True)
         raise typer.Exit(1)
     try:
-        ok = update_item(project_root, config, kind, item_id)
+        if kind == "bundle":
+            ok = update_bundle(project_root, config, item_id)
+        else:
+            ok = update_item(project_root, config, kind, item_id)
     except ValueError as e:
         typer.echo(str(e), err=True)
         raise typer.Exit(1)

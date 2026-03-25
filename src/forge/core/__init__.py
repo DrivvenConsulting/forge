@@ -4,8 +4,8 @@ from forge.core.install import install_bundle, install_item
 from forge.core.list_items import list_items
 from forge.core.project import find_project_root, load_config, save_config
 from forge.core.registry import fetch_registry, get_registry_items
-from forge.core.remove import remove_item
-from forge.core.update import update_all, update_item
+from forge.core.remove import remove_bundle, remove_item
+from forge.core.update import update_all, update_bundle, update_item
 from forge.core.validation import is_compatible_with_project_type, is_compatible_with_project_types
 
 __all__ = [
@@ -18,8 +18,10 @@ __all__ = [
     "fetch_registry",
     "get_registry_items",
     "remove_item",
+    "remove_bundle",
     "update_all",
     "update_item",
+    "update_bundle",
     "is_compatible_with_project_type",
     "is_compatible_with_project_types",
 ]

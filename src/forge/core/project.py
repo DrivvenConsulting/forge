@@ -5,7 +5,7 @@ from pathlib import Path
 
 import yaml
 
-from forge.core.models import InstalledItem, ProjectConfig, RegistryConfig
+from forge.core.models import BundleItemRef, InstalledBundle, InstalledItem, ProjectConfig, RegistryConfig
 
 
 def find_project_root(start: Path | None = None) -> Path | None:
@@ -37,6 +37,7 @@ def _coerce_project_config(data: dict) -> ProjectConfig:
         url=registry_data.get("url", ""),
         ref=registry_data.get("ref", "main"),
     )
+    _standalone_kinds = ("agent", "rule", "skill", "workflow", "prompt")
     installed = [
         InstalledItem(
             kind=item["kind"],
@@ -46,11 +47,33 @@ def _coerce_project_config(data: dict) -> ProjectConfig:
         )
         for item in data.get("installed", [])
         if isinstance(item, dict)
-        and item.get("kind") in ("agent", "rule", "skill")
+        and item.get("kind") in _standalone_kinds
         and item.get("id")
         and item.get("version")
         and item.get("source_registry_ref")
     ]
+    installed_bundles: list[InstalledBundle] = []
+    for b in data.get("installed_bundles", []):
+        if not isinstance(b, dict) or not b.get("id") or not b.get("version") or not b.get("source_registry_ref"):
+            continue
+        raw_members = b.get("members") or []
+        members: list[BundleItemRef] = []
+        for m in raw_members:
+            if (
+                isinstance(m, dict)
+                and m.get("kind") in _standalone_kinds
+                and m.get("id")
+            ):
+                members.append(BundleItemRef(kind=m["kind"], id=m["id"]))
+        if members:
+            installed_bundles.append(
+                InstalledBundle(
+                    id=b["id"],
+                    version=b["version"],
+                    source_registry_ref=b["source_registry_ref"],
+                    members=members,
+                )
+            )
     raw_types = data.get("project_types")
     if isinstance(raw_types, list) and len(raw_types) > 0:
         project_types = [str(t).strip() for t in raw_types if t]
@@ -63,6 +86,7 @@ def _coerce_project_config(data: dict) -> ProjectConfig:
         project_types=project_types,
         registry=registry,
         installed=installed,
+        installed_bundles=installed_bundles,
     )
 
 
@@ -113,6 +137,15 @@ def save_config(project_root: Path, config: ProjectConfig) -> None:
                 "source_registry_ref": item.source_registry_ref,
             }
             for item in config.installed
+        ],
+        "installed_bundles": [
+            {
+                "id": b.id,
+                "version": b.version,
+                "source_registry_ref": b.source_registry_ref,
+                "members": [{"kind": m.kind, "id": m.id} for m in b.members],
+            }
+            for b in config.installed_bundles
         ],
     }
     with open(config_path, "w", encoding="utf-8") as f:

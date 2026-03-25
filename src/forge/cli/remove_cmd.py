@@ -1,17 +1,17 @@
 """forge remove: remove an installed agent, rule, or skill."""
 
 from forge.core.project import find_project_root, load_config
-from forge.core.remove import remove_item
+from forge.core.remove import remove_bundle, remove_item
 import typer
 
 
 def remove_cmd(
-    kind: str = typer.Argument(..., help="agent, rule, skill, workflow, or prompt"),
+    kind: str = typer.Argument(..., help="agent, rule, skill, workflow, prompt, or bundle"),
     item_id: str = typer.Argument(..., help="Item id"),
 ) -> None:
     """Remove an installed agent, rule, skill, workflow, or prompt."""
-    if kind not in ("agent", "rule", "skill", "workflow", "prompt"):
-        typer.echo("Kind must be agent, rule, skill, workflow, or prompt.", err=True)
+    if kind not in ("agent", "rule", "skill", "workflow", "prompt", "bundle"):
+        typer.echo("Kind must be agent, rule, skill, workflow, prompt, or bundle.", err=True)
         raise typer.Exit(1)
     project_root = find_project_root()
     if project_root is None:
@@ -21,7 +21,10 @@ def remove_cmd(
     if config is None:
         typer.echo("No .forge/config.yaml found.", err=True)
         raise typer.Exit(1)
-    ok = remove_item(project_root, config, kind, item_id)
+    if kind == "bundle":
+        ok = remove_bundle(project_root, config, item_id)
+    else:
+        ok = remove_item(project_root, config, kind, item_id)
     if not ok:
         typer.echo(f"{kind} {item_id} is not installed.", err=True)
         raise typer.Exit(1)

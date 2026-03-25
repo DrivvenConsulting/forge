@@ -11,6 +11,12 @@ Using [uv](https://docs.astral.sh/uv/) (recommended):
 uv tool install forge-cli --from git+https://github.com/DrivvenConsulting/forge.git
 ```
 
+To upgrade to the latest version:
+
+```bash
+uv tool upgrade forge-cli
+```
+
 Or add it as a dependency in your project and run via `uv run`:
 
 ```bash
@@ -40,6 +46,7 @@ If you added Forge as a project dependency with `uv add`, run every command as `
    forge list
    forge list --category rule
    forge list --installed
+   forge list --installed --expand-bundles
    ```
 
 3. Install an agent, rule, skill, or bundle:
@@ -55,15 +62,20 @@ If you added Forge as a project dependency with `uv add`, run every command as `
    forge update
    forge update agent backend-engineer
    forge remove rule framework-fastapi
+   forge remove bundle backend-essentials
+   forge update bundle backend-essentials
    ```
 
 ## Project config (`.forge/config.yaml`)
 
 - **project_types**: List of one or more of `data`, `backend`, `frontend`, `infra`, `product`. Registry items whose `project_types` include any of these can be listed or installed. Use multiple types for mixed projects (e.g. `[data, infra]` for data + devops).
 - **registry**: `url` (Git clone URL) and optional `ref` (branch or tag, default `main`).
-- **installed**: List of installed items with `kind`, `id`, `version`, and `source_registry_ref` (filled by Forge).
+- **installed**: Items installed individually (`forge install agent|rule|skill|workflow|prompt …`) with `kind`, `id`, `version`, and `source_registry_ref`.
+- **installed_bundles**: Bundles installed via `forge install bundle …`. Each entry has `id`, `version`, `source_registry_ref`, and `members` (`kind` + `id` per asset). Re-running `forge install bundle <id>` syncs files and membership with the registry (same as `forge update bundle <id>`). Removing a bundle only deletes a member’s files if nothing else still references that asset (another bundle, or a standalone `installed` row).
 
 Configs with the legacy key `project_type` (singular) are still supported and treated as a single-type project.
+
+If you previously used an older Forge that flattened bundle members into `installed` only, remove those rows or run `forge remove` for each asset once, then install the bundle again so `installed_bundles` is populated.
 
 Example:
 
@@ -78,6 +90,15 @@ installed:
     id: framework-fastapi
     version: "1.0.0"
     source_registry_ref: main
+installed_bundles:
+  - id: backend-essentials
+    version: "1.0.0"
+    source_registry_ref: main
+    members:
+      - kind: rule
+        id: framework-fastapi
+      - kind: skill
+        id: my-skill
 ```
 
 ## Install destinations
@@ -86,7 +107,7 @@ installed:
 - **Rules** → `.cursor/rules/<id>/RULE.md`
 - **Skills** → `.cursor/skills/<id>/SKILL.md`
 
-Bundles expand to multiple installs; each member is installed as above and recorded in `installed`.
+Bundles copy each member into the same paths as above; the bundle itself is recorded under `installed_bundles` with a `members` snapshot (not as separate rows in `installed`).
 
 ## Registry format
 
@@ -118,7 +139,7 @@ bundles/
 
 **Bundle manifest** adds:
 
-- `items`: list of `{ kind: "agent"|"rule"|"skill", id: "<id>" }`
+- `items`: list of `{ kind: "agent"|"rule"|"skill"|"workflow"|"prompt", id: "<id>" }`
 
 Registry is versioned via Git tags or branches; Forge uses the `ref` from project config to clone or update.
 
@@ -164,11 +185,11 @@ After install, they live in `.cursor/skills/<id>/SKILL.md`. In Cursor, ask in na
 |--------|-------------|
 | `forge init [--project-type TYPES] [--registry-url URL] [--registry-ref REF]` | Create `.forge/config.yaml` (TYPES can be comma-separated, e.g. `data,infra`) |
 | `forge init --registry [--with-examples]` | Scaffold a registry repo (agents/, rules/, skills/, bundles/); optional example items |
-| `forge list [--installed] [--category agent\|rule\|skill\|bundle] [--project-type TYPE]` | List available registry items or installed items (`--installed`) |
-| `forge install <kind> <id>` | Install one item or a bundle (`kind` can be `bundle`) |
-| `forge remove <kind> <id>` | Remove an installed agent, rule, or skill |
-| `forge update` | Update all installed items |
-| `forge update <kind> <id>` | Update one installed item |
+| `forge list [--installed] [--expand-bundles] [--category …] [--project-type TYPE]` | List registry items or installed standalones + bundles (`--expand-bundles` lists bundle members) |
+| `forge install <kind> <id>` | Install one item or a bundle (`kind` can be `bundle`; same bundle id re-syncs membership) |
+| `forge remove <kind> <id>` | Remove an installed item or bundle (`kind` can be `bundle`) |
+| `forge update` | Update all installed bundles, then all standalone items |
+| `forge update <kind> <id>` | Update one standalone item or one bundle (`kind` can be `bundle`) |
 
 ## Core API (reusable)
 
@@ -183,8 +204,11 @@ from forge.core import (
     get_registry_items,
     list_items,
     install_item,
+    install_bundle,
     remove_item,
+    remove_bundle,
     update_all,
+    update_bundle,
 )
 
 project_root = find_project_root()

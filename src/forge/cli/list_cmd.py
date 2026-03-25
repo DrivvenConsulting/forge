@@ -16,6 +16,11 @@ def list_cmd(
     project_type: str | None = typer.Option(None, "--project-type", "-p", help="Override project type (data, backend, frontend, infra, product)"),
     all_items: bool = typer.Option(False, "--all", "-a", help="Show all items, not only those for current project type"),
     installed: bool = typer.Option(False, "--installed", "-i", help="List installed items in this project"),
+    expand_bundles: bool = typer.Option(
+        False,
+        "--expand-bundles",
+        help="With --installed, list each bundle member as its own row (From = bundle id)",
+    ),
 ) -> None:
     """List available agents, rules, skills, bundles, workflows, and prompts from the registry."""
     project_root = find_project_root()
@@ -28,10 +33,36 @@ def list_cmd(
         raise typer.Exit(1)
 
     if installed:
+        if category is not None and category == "bundle":
+            bundles_only = list(config.installed_bundles)
+            if not bundles_only:
+                typer.echo("No installed items found.")
+                return
+            table = Table(show_header=True, header_style="bold")
+            table.add_column("Kind", style="dim")
+            table.add_column("ID")
+            table.add_column("Version", style="dim")
+            table.add_column("Source ref", style="dim")
+            if expand_bundles:
+                table.add_column("From", style="dim")
+            for b in bundles_only:
+                if expand_bundles:
+                    table.add_row("bundle", b.id, b.version, b.source_registry_ref, "")
+                    for m in b.members:
+                        table.add_row(m.kind, m.id, "—", b.source_registry_ref, b.id)
+                else:
+                    table.add_row("bundle", b.id, b.version, b.source_registry_ref)
+            Console().print(table)
+            return
+
         items_to_show = list(config.installed)
         if category is not None:
             items_to_show = [i for i in items_to_show if i.kind == category]
-        if not items_to_show:
+        bundle_rows = list(config.installed_bundles)
+        if category is not None and category != "bundle":
+            bundle_rows = []
+
+        if not items_to_show and not bundle_rows:
             typer.echo("No installed items found.")
             return
         table = Table(show_header=True, header_style="bold")
@@ -39,10 +70,21 @@ def list_cmd(
         table.add_column("ID")
         table.add_column("Version", style="dim")
         table.add_column("Source ref", style="dim")
+        if expand_bundles:
+            table.add_column("From", style="dim")
         for i in items_to_show:
-            table.add_row(i.kind, i.id, i.version, i.source_registry_ref)
-        console = Console()
-        console.print(table)
+            if expand_bundles:
+                table.add_row(i.kind, i.id, i.version, i.source_registry_ref, "")
+            else:
+                table.add_row(i.kind, i.id, i.version, i.source_registry_ref)
+        for b in bundle_rows:
+            if expand_bundles:
+                table.add_row("bundle", b.id, b.version, b.source_registry_ref, "")
+                for m in b.members:
+                    table.add_row(m.kind, m.id, "—", b.source_registry_ref, b.id)
+            else:
+                table.add_row("bundle", b.id, b.version, b.source_registry_ref)
+        Console().print(table)
         return
 
     if project_type is not None:

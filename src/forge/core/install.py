@@ -87,14 +87,8 @@ def _copy_prompt(registry_root: Path, item: RegistryItem, project_root: Path) ->
     shutil.copy2(src_file, dest_file)
 
 
-def _install_single_item(
-    registry_root: Path,
-    item: RegistryItem,
-    project_root: Path,
-    config: ProjectConfig,
-    source_ref: str,
-) -> None:
-    """Copy one agent/rule/skill/workflow/prompt and append to config.installed. Caller must save config."""
+def copy_registry_item_to_project(registry_root: Path, item: RegistryItem, project_root: Path) -> None:
+    """Copy one agent/rule/skill/workflow/prompt from registry into .cursor/. Does not update config."""
     if item.kind == "agent":
         _copy_agent(registry_root, item, project_root)
     elif item.kind == "rule":
@@ -107,6 +101,17 @@ def _install_single_item(
         _copy_prompt(registry_root, item, project_root)
     else:
         raise ValueError(f"Expected agent, rule, skill, workflow, or prompt; got {item.kind}")
+
+
+def _install_single_item(
+    registry_root: Path,
+    item: RegistryItem,
+    project_root: Path,
+    config: ProjectConfig,
+    source_ref: str,
+) -> None:
+    """Copy one item into the project and append to config.installed. Caller must save config."""
+    copy_registry_item_to_project(registry_root, item, project_root)
     config.installed.append(
         InstalledItem(
             kind=item.kind,
@@ -151,7 +156,7 @@ def install_bundle(
     config: ProjectConfig,
     source_ref: str,
 ) -> None:
-    """Install a bundle: resolve each member and install them. Updates config and saves.
+    """Install or sync a bundle: one InstalledBundle row and member files. Idempotent if bundle id exists.
 
     Args:
         registry_root: Path to cloned registry repo.
@@ -165,12 +170,14 @@ def install_bundle(
         ValueError: If a bundle member is not found or not compatible.
         FileNotFoundError: If any item files are missing.
     """
-    if bundle_item.kind != "bundle" or not bundle_item.items:
-        raise ValueError("Not a bundle or bundle has no items")
-    for ref in bundle_item.items:
-        key = (ref.kind, ref.id)
-        if key not in items_by_kind_id:
-            raise ValueError(f"Bundle references unknown item: {ref.kind}/{ref.id}")
-        member = items_by_kind_id[key]
-        _install_single_item(registry_root, member, project_root, config, source_ref)
+    from forge.core.bundle_sync import sync_bundle_with_registry
+
+    sync_bundle_with_registry(
+        registry_root,
+        project_root,
+        config,
+        bundle_item,
+        items_by_kind_id,
+        source_ref,
+    )
     save_config(project_root, config)
