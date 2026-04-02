@@ -74,3 +74,29 @@ def test_init_project_with_product_type(tmp_path: Path, monkeypatch: pytest.Monk
     config = load_config(tmp_path)
     assert config is not None
     assert config.project_types == ["product"]
+
+
+def test_init_project_default_tool_is_cursor(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    result = runner.invoke(app, ["init"])
+    assert result.exit_code == 0
+    config = load_config(tmp_path)
+    assert config is not None
+    assert config.tool == "cursor"
+
+
+def test_init_project_with_claude_code_tool(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    result = runner.invoke(app, ["init", "--tool", "claude-code"])
+    assert result.exit_code == 0
+    assert "claude-code" in result.output
+    config = load_config(tmp_path)
+    assert config is not None
+    assert config.tool == "claude-code"
+
+
+def test_init_project_invalid_tool_exits(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(tmp_path)
+    result = runner.invoke(app, ["init", "--tool", "vscode"])
+    assert result.exit_code == 1
+    assert "Invalid tool" in result.output

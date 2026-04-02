@@ -58,13 +58,27 @@ def registry_root(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def project_root(tmp_path: Path) -> Path:
-    """Create a project dir with .forge/config.yaml."""
+    """Create a project dir with .forge/config.yaml (tool: cursor)."""
     root = tmp_path / "project"
     root.mkdir()
     forge_dir = root / ".forge"
     forge_dir.mkdir()
     (forge_dir / "config.yaml").write_text(
         "project_type: backend\nregistry:\n  url: https://example.com/registry.git\n  ref: main\ninstalled: []\n",
+        encoding="utf-8",
+    )
+    return root
+
+
+@pytest.fixture
+def claude_code_project_root(tmp_path: Path) -> Path:
+    """Create a project dir with .forge/config.yaml configured for claude-code."""
+    root = tmp_path / "claude_project"
+    root.mkdir()
+    forge_dir = root / ".forge"
+    forge_dir.mkdir()
+    (forge_dir / "config.yaml").write_text(
+        "project_types: [backend]\nregistry:\n  url: https://example.com/registry.git\n  ref: main\ntool: claude-code\ninstalled: []\n",
         encoding="utf-8",
     )
     return root

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import typer
 
-from forge.core.models import ProjectConfig, RegistryConfig
+from forge.core.models import ProjectConfig, RegistryConfig, TargetTool
 from forge.core.project import find_project_root, save_config
 from forge.core.registry_init import is_registry_root, scaffold_registry
 
@@ -36,6 +36,12 @@ def init_cmd(
         "--with-examples",
         help="Add minimal example items (only with --registry).",
     ),
+    tool: str = typer.Option(
+        "cursor",
+        "--tool",
+        "-t",
+        help="Target tool for installed items: cursor (default) or claude-code.",
+    ),
 ) -> None:
     """Create .forge/config.yaml in the current directory, or scaffold a registry repo with --registry."""
     cwd = Path.cwd()
@@ -60,6 +66,9 @@ def init_cmd(
         typer.echo(msg)
         return
 
+    if tool not in ("cursor", "claude-code"):
+        typer.echo(f"Invalid tool: {tool}. Use cursor or claude-code.", err=True)
+        raise typer.Exit(1)
     existing = find_project_root(cwd)
     if existing is not None:
         typer.echo(f"Forge is already initialized in {existing}.", err=True)
@@ -78,7 +87,8 @@ def init_cmd(
     config = ProjectConfig(
         project_types=project_types,
         registry=RegistryConfig(url=registry_url, ref=registry_ref),
+        tool=tool,
         installed=[],
     )
     save_config(cwd, config)
-    typer.echo(f"Initialized Forge in {cwd} with project types {project_types}.")
+    typer.echo(f"Initialized Forge in {cwd} with project types {project_types} for {tool}.")
