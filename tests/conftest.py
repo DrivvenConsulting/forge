@@ -21,6 +21,7 @@ def registry_root(tmp_path: Path) -> Path:
     (root / "rules").mkdir()
     (root / "skills").mkdir()
     (root / "bundles").mkdir()
+    (root / "workflows").mkdir()
 
     agent_dir = root / "agents" / "test-agent"
     agent_dir.mkdir(parents=True)
@@ -45,6 +46,14 @@ def registry_root(tmp_path: Path) -> Path:
         encoding="utf-8",
     )
     (skill_dir / "SKILL.md").write_text("# Test Skill\n", encoding="utf-8")
+
+    workflow_dir = root / "workflows" / "test-workflow"
+    workflow_dir.mkdir(parents=True)
+    (workflow_dir / "manifest.yaml").write_text(
+        "version: '1.0.0'\nproject_types: [backend, data]\ndescription: Test workflow\n",
+        encoding="utf-8",
+    )
+    (workflow_dir / "WORKFLOW.md").write_text("# Test Workflow\n", encoding="utf-8")
 
     bundle_dir = root / "bundles" / "test-bundle"
     bundle_dir.mkdir(parents=True)

@@ -12,6 +12,7 @@ def test_get_registry_items(registry_root: Path) -> None:
     assert ("rule", "test-rule") in by_kind_id
     assert ("skill", "test-skill") in by_kind_id
     assert ("bundle", "test-bundle") in by_kind_id
+    assert ("workflow", "test-workflow") in by_kind_id
     bundle = by_kind_id[("bundle", "test-bundle")]
     assert bundle.items is not None
     assert len(bundle.items) == 2

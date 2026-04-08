@@ -22,10 +22,10 @@ def dest_path(project_root: Path, kind: str, item_id: str, tool: str) -> Path:
     elif kind == "rule":
         return base / "rules" / item_id / "RULE.md"
     elif kind == "skill":
-        if tool == "claude-code":
-            return base / "commands" / f"{item_id}.md"
         return base / "skills" / item_id / "SKILL.md"
     elif kind == "workflow":
+        if tool == "claude-code":
+            return base / "commands" / item_id
         return base / "workflows" / item_id
     elif kind == "prompt":
         if tool == "claude-code":
@@ -56,7 +56,7 @@ def _copy_rule(registry_root: Path, item: RegistryItem, project_root: Path, tool
 
 
 def _copy_skill(registry_root: Path, item: RegistryItem, project_root: Path, tool: str) -> None:
-    """Copy SKILL.md to the target skills/commands directory."""
+    """Copy SKILL.md to the target skills directory."""
     src_file = registry_root / item.path / "SKILL.md"
     if not src_file.exists():
         raise FileNotFoundError(f"SKILL.md not found in {registry_root / item.path}")
@@ -66,7 +66,7 @@ def _copy_skill(registry_root: Path, item: RegistryItem, project_root: Path, too
 
 
 def _copy_workflow(registry_root: Path, item: RegistryItem, project_root: Path, tool: str) -> None:
-    """Copy WORKFLOW.md and manifest.yaml to the target workflows directory."""
+    """Copy WORKFLOW.md and manifest.yaml to workflows/ (Cursor) or commands/<id>/ (Claude Code)."""
     src_dir = registry_root / item.path
     dest_dir = dest_path(project_root, "workflow", item.id, tool)
     dest_dir.mkdir(parents=True, exist_ok=True)
