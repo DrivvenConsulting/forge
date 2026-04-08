@@ -7,35 +7,37 @@ from forge.core.models import InstalledItem, ProjectConfig, RegistryItem
 from forge.core.project import load_config, save_config
 
 
-def _agent_dest_path(project_root: Path, item_id: str) -> Path:
-    """Path for installed agent: .cursor/agents/<id>.md"""
-    return project_root / ".cursor" / "agents" / f"{item_id}.md"
+def dest_path(project_root: Path, kind: str, item_id: str, tool: str) -> Path:
+    """Return the installation path for an item given the target tool.
+
+    Args:
+        project_root: Project root directory.
+        kind: One of agent, rule, skill, workflow, prompt.
+        item_id: Item identifier (may contain / for prompts).
+        tool: Target tool — 'cursor' or 'claude-code'.
+    """
+    base = project_root / (".cursor" if tool == "cursor" else ".claude")
+    if kind == "agent":
+        return base / "agents" / f"{item_id}.md"
+    elif kind == "rule":
+        return base / "rules" / item_id / "RULE.md"
+    elif kind == "skill":
+        return base / "skills" / item_id / "SKILL.md"
+    elif kind == "workflow":
+        if tool == "claude-code":
+            return base / "commands" / item_id
+        return base / "workflows" / item_id
+    elif kind == "prompt":
+        if tool == "claude-code":
+            return base / "commands" / f"{item_id}.md"
+        return base / "prompts" / f"{item_id}.md"
+    raise ValueError(f"Invalid kind: {kind}")
 
 
-def _rule_dest_path(project_root: Path, item_id: str) -> Path:
-    """Path for installed rule: .cursor/rules/<id>/RULE.md"""
-    return project_root / ".cursor" / "rules" / item_id / "RULE.md"
-
-
-def _skill_dest_path(project_root: Path, item_id: str) -> Path:
-    """Path for installed skill: .cursor/skills/<id>/SKILL.md"""
-    return project_root / ".cursor" / "skills" / item_id / "SKILL.md"
-
-
-def _workflow_dest_path(project_root: Path, item_id: str) -> Path:
-    """Path for installed workflow: .cursor/workflows/<id>/"""
-    return project_root / ".cursor" / "workflows" / item_id
-
-
-def _prompt_dest_path(project_root: Path, item_id: str) -> Path:
-    """Path for installed prompt: .cursor/prompts/<id>.md (id may contain /)."""
-    return project_root / ".cursor" / "prompts" / f"{item_id}.md"
-
-
-def _copy_agent(registry_root: Path, item: RegistryItem, project_root: Path) -> None:
-    """Copy agent content (first .md file) to .cursor/agents/<id>.md."""
+def _copy_agent(registry_root: Path, item: RegistryItem, project_root: Path, tool: str) -> None:
+    """Copy agent content (first .md file) to the target agents directory."""
     src_dir = registry_root / item.path
-    dest_file = _agent_dest_path(project_root, item.id)
+    dest_file = dest_path(project_root, "agent", item.id, tool)
     dest_file.parent.mkdir(parents=True, exist_ok=True)
     md_files = list(src_dir.glob("*.md"))
     if not md_files:
@@ -43,30 +45,30 @@ def _copy_agent(registry_root: Path, item: RegistryItem, project_root: Path) -> 
     shutil.copy2(md_files[0], dest_file)
 
 
-def _copy_rule(registry_root: Path, item: RegistryItem, project_root: Path) -> None:
-    """Copy RULE.md to .cursor/rules/<id>/RULE.md."""
+def _copy_rule(registry_root: Path, item: RegistryItem, project_root: Path, tool: str) -> None:
+    """Copy RULE.md to the target rules directory."""
     src_file = registry_root / item.path / "RULE.md"
     if not src_file.exists():
         raise FileNotFoundError(f"RULE.md not found in {registry_root / item.path}")
-    dest_file = _rule_dest_path(project_root, item.id)
+    dest_file = dest_path(project_root, "rule", item.id, tool)
     dest_file.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src_file, dest_file)
 
 
-def _copy_skill(registry_root: Path, item: RegistryItem, project_root: Path) -> None:
-    """Copy SKILL.md to .cursor/skills/<id>/SKILL.md."""
+def _copy_skill(registry_root: Path, item: RegistryItem, project_root: Path, tool: str) -> None:
+    """Copy SKILL.md to the target skills directory."""
     src_file = registry_root / item.path / "SKILL.md"
     if not src_file.exists():
         raise FileNotFoundError(f"SKILL.md not found in {registry_root / item.path}")
-    dest_file = _skill_dest_path(project_root, item.id)
+    dest_file = dest_path(project_root, "skill", item.id, tool)
     dest_file.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src_file, dest_file)
 
 
-def _copy_workflow(registry_root: Path, item: RegistryItem, project_root: Path) -> None:
-    """Copy WORKFLOW.md and manifest.yaml to .cursor/workflows/<id>/."""
+def _copy_workflow(registry_root: Path, item: RegistryItem, project_root: Path, tool: str) -> None:
+    """Copy WORKFLOW.md and manifest.yaml to workflows/ (Cursor) or commands/<id>/ (Claude Code)."""
     src_dir = registry_root / item.path
-    dest_dir = _workflow_dest_path(project_root, item.id)
+    dest_dir = dest_path(project_root, "workflow", item.id, tool)
     dest_dir.mkdir(parents=True, exist_ok=True)
     workflow_md = src_dir / "WORKFLOW.md"
     manifest_yaml = src_dir / "manifest.yaml"
@@ -77,28 +79,30 @@ def _copy_workflow(registry_root: Path, item: RegistryItem, project_root: Path) 
         shutil.copy2(manifest_yaml, dest_dir / "manifest.yaml")
 
 
-def _copy_prompt(registry_root: Path, item: RegistryItem, project_root: Path) -> None:
-    """Copy prompt .md file to .cursor/prompts/<id>.md."""
+def _copy_prompt(registry_root: Path, item: RegistryItem, project_root: Path, tool: str) -> None:
+    """Copy prompt .md file to the target prompts/commands directory."""
     src_file = registry_root / item.path
     if not src_file.exists():
         raise FileNotFoundError(f"Prompt file not found: {src_file}")
-    dest_file = _prompt_dest_path(project_root, item.id)
+    dest_file = dest_path(project_root, "prompt", item.id, tool)
     dest_file.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src_file, dest_file)
 
 
-def copy_registry_item_to_project(registry_root: Path, item: RegistryItem, project_root: Path) -> None:
-    """Copy one agent/rule/skill/workflow/prompt from registry into .cursor/. Does not update config."""
+def copy_registry_item_to_project(
+    registry_root: Path, item: RegistryItem, project_root: Path, tool: str
+) -> None:
+    """Copy one agent/rule/skill/workflow/prompt from registry into the target tool directory. Does not update config."""
     if item.kind == "agent":
-        _copy_agent(registry_root, item, project_root)
+        _copy_agent(registry_root, item, project_root, tool)
     elif item.kind == "rule":
-        _copy_rule(registry_root, item, project_root)
+        _copy_rule(registry_root, item, project_root, tool)
     elif item.kind == "skill":
-        _copy_skill(registry_root, item, project_root)
+        _copy_skill(registry_root, item, project_root, tool)
     elif item.kind == "workflow":
-        _copy_workflow(registry_root, item, project_root)
+        _copy_workflow(registry_root, item, project_root, tool)
     elif item.kind == "prompt":
-        _copy_prompt(registry_root, item, project_root)
+        _copy_prompt(registry_root, item, project_root, tool)
     else:
         raise ValueError(f"Expected agent, rule, skill, workflow, or prompt; got {item.kind}")
 
@@ -111,7 +115,7 @@ def _install_single_item(
     source_ref: str,
 ) -> None:
     """Copy one item into the project and append to config.installed. Caller must save config."""
-    copy_registry_item_to_project(registry_root, item, project_root)
+    copy_registry_item_to_project(registry_root, item, project_root, config.tool)
     config.installed.append(
         InstalledItem(
             kind=item.kind,

@@ -73,10 +73,10 @@ def sync_bundle_with_registry(
         old_keys = {(r.kind, r.id) for r in old_bundle.members}
         for kind, mid in old_keys - new_keys:
             if member_refcount(config, kind, mid, exclude_bundle_id=bundle_id) == 0:
-                remove_member_files(project_root, kind, mid)
+                remove_member_files(project_root, kind, mid, config.tool)
         for kind, mid in new_keys:
             member = items_by_kind_id[(kind, mid)]
-            copy_registry_item_to_project(registry_root, member, project_root)
+            copy_registry_item_to_project(registry_root, member, project_root, config.tool)
         config.installed_bundles[idx] = InstalledBundle(
             id=bundle_id,
             version=bundle_item.version,
@@ -86,7 +86,7 @@ def sync_bundle_with_registry(
     else:
         for ref in new_refs:
             member = items_by_kind_id[(ref.kind, ref.id)]
-            copy_registry_item_to_project(registry_root, member, project_root)
+            copy_registry_item_to_project(registry_root, member, project_root, config.tool)
         config.installed_bundles.append(
             InstalledBundle(
                 id=bundle_id,

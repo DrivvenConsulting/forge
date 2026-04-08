@@ -36,6 +36,17 @@ def test_install_rule(registry_root: Path, project_root: Path) -> None:
     assert "Test Rule" in dest.read_text()
 
 
+def test_install_workflow(registry_root: Path, project_root: Path) -> None:
+    config = load_config(project_root)
+    assert config is not None
+    items = get_registry_items(registry_root)
+    workflow = next(i for i in items if i.kind == "workflow" and i.id == "test-workflow")
+    install_item(registry_root, workflow, project_root, config, "main")
+    dest = project_root / ".cursor" / "workflows" / "test-workflow" / "WORKFLOW.md"
+    assert dest.exists()
+    assert "Test Workflow" in dest.read_text()
+
+
 def test_install_skill(registry_root: Path, project_root: Path) -> None:
     config = load_config(project_root)
     assert config is not None
@@ -61,3 +72,58 @@ def test_install_bundle(registry_root: Path, project_root: Path) -> None:
     assert len(config2.installed_bundles) == 1
     assert config2.installed_bundles[0].id == "test-bundle"
     assert len(config2.installed_bundles[0].members) == 2
+
+
+def test_install_agent_claude_code(registry_root: Path, claude_code_project_root: Path) -> None:
+    config = load_config(claude_code_project_root)
+    assert config is not None
+    assert config.tool == "claude-code"
+    items = get_registry_items(registry_root)
+    agent = next(i for i in items if i.kind == "agent" and i.id == "test-agent")
+    install_item(registry_root, agent, claude_code_project_root, config, "main")
+    dest = claude_code_project_root / ".claude" / "agents" / "test-agent.md"
+    assert dest.exists()
+    assert "Test Agent" in dest.read_text()
+
+
+def test_install_rule_claude_code(registry_root: Path, claude_code_project_root: Path) -> None:
+    config = load_config(claude_code_project_root)
+    assert config is not None
+    items = get_registry_items(registry_root)
+    rule = next(i for i in items if i.kind == "rule" and i.id == "test-rule")
+    install_item(registry_root, rule, claude_code_project_root, config, "main")
+    dest = claude_code_project_root / ".claude" / "rules" / "test-rule" / "RULE.md"
+    assert dest.exists()
+    assert "Test Rule" in dest.read_text()
+
+
+def test_install_workflow_claude_code(registry_root: Path, claude_code_project_root: Path) -> None:
+    config = load_config(claude_code_project_root)
+    assert config is not None
+    items = get_registry_items(registry_root)
+    workflow = next(i for i in items if i.kind == "workflow" and i.id == "test-workflow")
+    install_item(registry_root, workflow, claude_code_project_root, config, "main")
+    dest = claude_code_project_root / ".claude" / "commands" / "test-workflow" / "WORKFLOW.md"
+    assert dest.exists()
+    assert "Test Workflow" in dest.read_text()
+
+
+def test_install_skill_claude_code(registry_root: Path, claude_code_project_root: Path) -> None:
+    config = load_config(claude_code_project_root)
+    assert config is not None
+    items = get_registry_items(registry_root)
+    skill = next(i for i in items if i.kind == "skill" and i.id == "test-skill")
+    install_item(registry_root, skill, claude_code_project_root, config, "main")
+    dest = claude_code_project_root / ".claude" / "skills" / "test-skill" / "SKILL.md"
+    assert dest.exists()
+
+
+def test_install_bundle_claude_code(registry_root: Path, claude_code_project_root: Path) -> None:
+    config = load_config(claude_code_project_root)
+    assert config is not None
+    items = get_registry_items(registry_root)
+    by_kind_id = {(i.kind, i.id): i for i in items}
+    bundle = by_kind_id[("bundle", "test-bundle")]
+    install_bundle(registry_root, bundle, by_kind_id, claude_code_project_root, config, "main")
+    assert (claude_code_project_root / ".claude" / "rules" / "test-rule" / "RULE.md").exists()
+    assert (claude_code_project_root / ".claude" / "skills" / "test-skill" / "SKILL.md").exists()

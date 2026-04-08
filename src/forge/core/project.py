@@ -82,9 +82,12 @@ def _coerce_project_config(data: dict) -> ProjectConfig:
     project_types = [t for t in project_types if t in ("data", "backend", "frontend", "infra", "product")]
     if not project_types:
         project_types = ["backend"]
+    raw_tool = data.get("tool", "cursor")
+    tool = raw_tool if raw_tool in ("cursor", "claude-code") else "cursor"
     return ProjectConfig(
         project_types=project_types,
         registry=registry,
+        tool=tool,
         installed=installed,
         installed_bundles=installed_bundles,
     )
@@ -129,6 +132,7 @@ def save_config(project_root: Path, config: ProjectConfig) -> None:
             "url": config.registry.url,
             "ref": config.registry.ref,
         },
+        "tool": config.tool,
         "installed": [
             {
                 "kind": item.kind,

@@ -21,6 +21,7 @@ def registry_root(tmp_path: Path) -> Path:
     (root / "rules").mkdir()
     (root / "skills").mkdir()
     (root / "bundles").mkdir()
+    (root / "workflows").mkdir()
 
     agent_dir = root / "agents" / "test-agent"
     agent_dir.mkdir(parents=True)
@@ -46,6 +47,14 @@ def registry_root(tmp_path: Path) -> Path:
     )
     (skill_dir / "SKILL.md").write_text("# Test Skill\n", encoding="utf-8")
 
+    workflow_dir = root / "workflows" / "test-workflow"
+    workflow_dir.mkdir(parents=True)
+    (workflow_dir / "manifest.yaml").write_text(
+        "version: '1.0.0'\nproject_types: [backend, data]\ndescription: Test workflow\n",
+        encoding="utf-8",
+    )
+    (workflow_dir / "WORKFLOW.md").write_text("# Test Workflow\n", encoding="utf-8")
+
     bundle_dir = root / "bundles" / "test-bundle"
     bundle_dir.mkdir(parents=True)
     (bundle_dir / "manifest.yaml").write_text(
@@ -58,13 +67,27 @@ def registry_root(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def project_root(tmp_path: Path) -> Path:
-    """Create a project dir with .forge/config.yaml."""
+    """Create a project dir with .forge/config.yaml (tool: cursor)."""
     root = tmp_path / "project"
     root.mkdir()
     forge_dir = root / ".forge"
     forge_dir.mkdir()
     (forge_dir / "config.yaml").write_text(
         "project_type: backend\nregistry:\n  url: https://example.com/registry.git\n  ref: main\ninstalled: []\n",
+        encoding="utf-8",
+    )
+    return root
+
+
+@pytest.fixture
+def claude_code_project_root(tmp_path: Path) -> Path:
+    """Create a project dir with .forge/config.yaml configured for claude-code."""
+    root = tmp_path / "claude_project"
+    root.mkdir()
+    forge_dir = root / ".forge"
+    forge_dir.mkdir()
+    (forge_dir / "config.yaml").write_text(
+        "project_types: [backend]\nregistry:\n  url: https://example.com/registry.git\n  ref: main\ntool: claude-code\ninstalled: []\n",
         encoding="utf-8",
     )
     return root

@@ -6,9 +6,11 @@ from pydantic import BaseModel, Field
 
 ItemKind = Literal["agent", "rule", "skill", "bundle", "workflow", "prompt"]
 ProjectType = Literal["data", "backend", "frontend", "infra", "product"]
+TargetTool = Literal["cursor", "claude-code"]
 
 PROJECT_TYPES: tuple[ProjectType, ...] = ("data", "backend", "frontend", "infra", "product")
 ITEM_KINDS: tuple[ItemKind, ...] = ("agent", "rule", "skill", "bundle", "workflow", "prompt")
+TARGET_TOOLS: tuple[TargetTool, ...] = ("cursor", "claude-code")
 
 
 class ItemManifest(BaseModel):
@@ -80,5 +82,6 @@ class ProjectConfig(BaseModel):
 
     project_types: list[ProjectType] = Field(..., min_length=1)
     registry: RegistryConfig
+    tool: TargetTool = Field(default="cursor")
     installed: list[InstalledItem] = Field(default_factory=list)
     installed_bundles: list[InstalledBundle] = Field(default_factory=list)
