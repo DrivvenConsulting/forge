@@ -85,3 +85,45 @@ class ProjectConfig(BaseModel):
     tool: TargetTool = Field(default="cursor")
     installed: list[InstalledItem] = Field(default_factory=list)
     installed_bundles: list[InstalledBundle] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Setup wizard models
+# ---------------------------------------------------------------------------
+
+SetupToolKind = Literal["cli", "mcp-server"]
+
+
+class HowToStep(BaseModel):
+    """A single numbered step in an auth or configuration how-to guide."""
+
+    step: int
+    description: str
+    command: str | None = None
+
+
+class MCPServerConfig(BaseModel):
+    """The mcpServers entry written to ~/.claude/settings.json."""
+
+    command: str
+    args: list[str] = Field(default_factory=list)
+    env: dict[str, str] = Field(default_factory=dict)
+
+
+class SetupTool(BaseModel):
+    """Definition of a developer tool managed by forge setup."""
+
+    id: str = Field(..., min_length=1)
+    kind: SetupToolKind
+    display_name: str
+    description: str
+    # CLI tools
+    check_command: list[str] | None = None
+    install_commands: dict[str, list[str]] | None = None
+    # MCP server tools
+    mcp_key: str | None = None
+    mcp_config: MCPServerConfig | None = None
+    # Shared
+    env_vars_required: list[str] = Field(default_factory=list)
+    auth_steps: list[HowToStep] = Field(default_factory=list)
+    post_install_steps: list[HowToStep] = Field(default_factory=list)
