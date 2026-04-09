@@ -7,9 +7,9 @@ CLI for managing AI agents, rules, and skills from a centralized, versioned regi
 Using [uv](https://docs.astral.sh/uv/) (recommended):
 
 ```bash
-# Install forge globally (available as `forge`)
 uv tool install forge-cli --from git+https://github.com/DrivvenConsulting/forge.git
 ```
+We recommend you to install it globaly. After that, it will be available at you terminal as `forge`
 
 To upgrade to the latest version:
 
@@ -20,7 +20,6 @@ uv tool upgrade forge-cli
 Or add it as a dependency in your project and run via `uv run`:
 
 ```bash
-# From your project root (with a pyproject.toml)
 uv add --git https://github.com/DrivvenConsulting/forge.git
 uv run forge init --project-type backend
 ```
