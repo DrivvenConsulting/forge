@@ -4,12 +4,12 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-ItemKind = Literal["agent", "rule", "skill", "bundle", "workflow", "prompt"]
+ItemKind = Literal["agent", "rule", "skill", "bundle", "workflow", "prompt", "hook"]
 ProjectType = Literal["data", "backend", "frontend", "infra", "product"]
 TargetTool = Literal["cursor", "claude-code"]
 
 PROJECT_TYPES: tuple[ProjectType, ...] = ("data", "backend", "frontend", "infra", "product")
-ITEM_KINDS: tuple[ItemKind, ...] = ("agent", "rule", "skill", "bundle", "workflow", "prompt")
+ITEM_KINDS: tuple[ItemKind, ...] = ("agent", "rule", "skill", "bundle", "workflow", "prompt", "hook")
 TARGET_TOOLS: tuple[TargetTool, ...] = ("cursor", "claude-code")
 
 
@@ -24,7 +24,7 @@ class ItemManifest(BaseModel):
 class BundleItemRef(BaseModel):
     """Reference to an item inside a bundle."""
 
-    kind: Literal["agent", "rule", "skill", "workflow", "prompt"]
+    kind: Literal["agent", "rule", "skill", "workflow", "prompt", "hook"]
     id: str = Field(..., min_length=1)
 
 
@@ -55,7 +55,7 @@ class RegistryItem(BaseModel):
 class InstalledItem(BaseModel):
     """Record of an installed item in project config."""
 
-    kind: Literal["agent", "rule", "skill", "workflow", "prompt"]
+    kind: Literal["agent", "rule", "skill", "workflow", "prompt", "hook"]
     id: str = Field(..., min_length=1)
     version: str = Field(..., min_length=1)
     source_registry_ref: str = Field(..., description="Git ref used at install time, e.g. main or v1.0.0")

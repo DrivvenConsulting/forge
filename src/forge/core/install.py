@@ -1,5 +1,6 @@
 """Install a single item or bundle: copy files and update project config."""
 
+import json
 import shutil
 from pathlib import Path
 
@@ -31,6 +32,10 @@ def dest_path(project_root: Path, kind: str, item_id: str, tool: str) -> Path:
         if tool == "claude-code":
             return base / "commands" / f"{item_id}.md"
         return base / "prompts" / f"{item_id}.md"
+    elif kind == "hook":
+        if tool != "claude-code":
+            raise ValueError("Hooks are only supported for claude-code projects")
+        return base / "hooks" / f"{item_id}.sh"
     raise ValueError(f"Invalid kind: {kind}")
 
 
@@ -79,6 +84,40 @@ def _copy_workflow(registry_root: Path, item: RegistryItem, project_root: Path, 
         shutil.copy2(manifest_yaml, dest_dir / "manifest.yaml")
 
 
+def _install_hook(registry_root: Path, item: RegistryItem, project_root: Path, tool: str) -> None:
+    """Copy hook script and merge hooks.json into project .claude/settings.json."""
+    if tool != "claude-code":
+        raise ValueError("Hooks are only supported for claude-code projects")
+    script_src = registry_root / item.path / "scripts" / f"{item.id}.sh"
+    if not script_src.exists():
+        raise FileNotFoundError(f"Hook script not found: {script_src}")
+    script_dest = dest_path(project_root, "hook", item.id, tool)
+    script_dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(script_src, script_dest)
+    script_dest.chmod(script_dest.stat().st_mode | 0o111)
+
+    hooks_json_path = registry_root / item.path / "hooks.json"
+    if hooks_json_path.exists():
+        from forge.core.setup import load_claude_settings, save_claude_settings
+
+        hook_defs = json.loads(hooks_json_path.read_text(encoding="utf-8"))
+        settings_path = project_root / ".claude" / "settings.json"
+        settings = load_claude_settings(settings_path)
+        project_hooks = settings.setdefault("hooks", {})
+        for event, matchers in hook_defs.items():
+            event_list = project_hooks.setdefault(event, [])
+            for new_entry in matchers:
+                new_cmds = {h["command"] for h in new_entry.get("hooks", [])}
+                already = any(
+                    new_cmds == {h["command"] for h in ex.get("hooks", [])}
+                    and ex.get("matcher") == new_entry.get("matcher")
+                    for ex in event_list
+                )
+                if not already:
+                    event_list.append(new_entry)
+        save_claude_settings(settings, settings_path)
+
+
 def _copy_prompt(registry_root: Path, item: RegistryItem, project_root: Path, tool: str) -> None:
     """Copy prompt .md file to the target prompts/commands directory."""
     src_file = registry_root / item.path
@@ -103,8 +142,10 @@ def copy_registry_item_to_project(
         _copy_workflow(registry_root, item, project_root, tool)
     elif item.kind == "prompt":
         _copy_prompt(registry_root, item, project_root, tool)
+    elif item.kind == "hook":
+        _install_hook(registry_root, item, project_root, tool)
     else:
-        raise ValueError(f"Expected agent, rule, skill, workflow, or prompt; got {item.kind}")
+        raise ValueError(f"Expected agent, rule, skill, workflow, prompt, or hook; got {item.kind}")
 
 
 def _install_single_item(

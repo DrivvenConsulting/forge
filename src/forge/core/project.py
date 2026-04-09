@@ -37,7 +37,7 @@ def _coerce_project_config(data: dict) -> ProjectConfig:
         url=registry_data.get("url", ""),
         ref=registry_data.get("ref", "main"),
     )
-    _standalone_kinds = ("agent", "rule", "skill", "workflow", "prompt")
+    _standalone_kinds = ("agent", "rule", "skill", "workflow", "prompt", "hook")
     installed = [
         InstalledItem(
             kind=item["kind"],

@@ -16,7 +16,7 @@ from forge.core.models import (
     RegistryItem,
 )
 
-REGISTRY_CATEGORIES: tuple[str, ...] = ("agents", "rules", "skills", "bundles", "workflows", "prompts")
+REGISTRY_CATEGORIES: tuple[str, ...] = ("agents", "rules", "skills", "bundles", "workflows", "prompts", "hooks")
 KIND_FROM_DIR: dict[str, ItemKind] = {
     "agents": "agent",
     "rules": "rule",
@@ -24,6 +24,7 @@ KIND_FROM_DIR: dict[str, ItemKind] = {
     "bundles": "bundle",
     "workflows": "workflow",
     "prompts": "prompt",
+    "hooks": "hook",
 }
 
 
@@ -144,7 +145,7 @@ def _parse_bundle_manifest(manifest_path: Path) -> BundleManifest | None:
                 continue
             kind = ref.get("kind")
             item_id = ref.get("id")
-            if kind not in ("agent", "rule", "skill", "workflow", "prompt") or not item_id:
+            if kind not in ("agent", "rule", "skill", "workflow", "prompt", "hook") or not item_id:
                 continue
             items.append(BundleItemRef(kind=kind, id=item_id))
         if not items:
