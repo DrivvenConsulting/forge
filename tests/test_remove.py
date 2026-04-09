@@ -33,3 +33,21 @@ def test_remove_item_not_installed(project_root: Path) -> None:
     assert config is not None
     ok = remove_item(project_root, config, "rule", "nonexistent")
     assert ok is False
+
+
+def test_remove_hook(registry_root: Path, claude_code_project_root: Path) -> None:
+    import json
+
+    config = load_config(claude_code_project_root)
+    assert config is not None
+    items = get_registry_items(registry_root)
+    hook = next(i for i in items if i.kind == "hook" and i.id == "test-hook")
+    install_item(registry_root, hook, claude_code_project_root, config, "main")
+    config2 = load_config(claude_code_project_root)
+    assert config2 is not None
+    ok = remove_item(claude_code_project_root, config2, "hook", "test-hook")
+    assert ok is True
+    assert not (claude_code_project_root / ".claude" / "hooks" / "test-hook.sh").exists()
+    settings_path = claude_code_project_root / ".claude" / "settings.json"
+    settings = json.loads(settings_path.read_text())
+    assert not settings.get("hooks", {}).get("PostToolUse")

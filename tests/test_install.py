@@ -127,3 +127,38 @@ def test_install_bundle_claude_code(registry_root: Path, claude_code_project_roo
     install_bundle(registry_root, bundle, by_kind_id, claude_code_project_root, config, "main")
     assert (claude_code_project_root / ".claude" / "rules" / "test-rule" / "RULE.md").exists()
     assert (claude_code_project_root / ".claude" / "skills" / "test-skill" / "SKILL.md").exists()
+
+
+def test_install_hook(registry_root: Path, claude_code_project_root: Path) -> None:
+    import json
+
+    config = load_config(claude_code_project_root)
+    assert config is not None
+    items = get_registry_items(registry_root)
+    hook = next(i for i in items if i.kind == "hook" and i.id == "test-hook")
+    install_item(registry_root, hook, claude_code_project_root, config, "main")
+    script = claude_code_project_root / ".claude" / "hooks" / "test-hook.sh"
+    assert script.exists()
+    assert script.stat().st_mode & 0o111
+    settings_path = claude_code_project_root / ".claude" / "settings.json"
+    settings = json.loads(settings_path.read_text())
+    assert "PostToolUse" in settings["hooks"]
+    config2 = load_config(claude_code_project_root)
+    assert config2 is not None
+    assert any(i.kind == "hook" and i.id == "test-hook" for i in config2.installed)
+
+
+def test_install_hook_idempotent(registry_root: Path, claude_code_project_root: Path) -> None:
+    import json
+
+    config = load_config(claude_code_project_root)
+    assert config is not None
+    items = get_registry_items(registry_root)
+    hook = next(i for i in items if i.kind == "hook" and i.id == "test-hook")
+    install_item(registry_root, hook, claude_code_project_root, config, "main")
+    config2 = load_config(claude_code_project_root)
+    assert config2 is not None
+    install_item(registry_root, hook, claude_code_project_root, config2, "main")
+    settings_path = claude_code_project_root / ".claude" / "settings.json"
+    settings = json.loads(settings_path.read_text())
+    assert len(settings["hooks"]["PostToolUse"]) == 1

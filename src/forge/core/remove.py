@@ -8,9 +8,40 @@ from forge.core.models import InstalledItem, ProjectConfig
 from forge.core.project import save_config
 
 
+def _remove_hook_from_settings(project_root: Path, item_id: str) -> None:
+    """Remove hook entries for item_id from project .claude/settings.json."""
+    from forge.core.setup import load_claude_settings, save_claude_settings
+
+    settings_path = project_root / ".claude" / "settings.json"
+    settings = load_claude_settings(settings_path)
+    hooks = settings.get("hooks", {})
+    script_suffix = f"/.claude/hooks/{item_id}.sh"
+    changed = False
+    for event in list(hooks.keys()):
+        filtered = [
+            entry for entry in hooks[event]
+            if not any(h.get("command", "").endswith(script_suffix) for h in entry.get("hooks", []))
+        ]
+        if len(filtered) != len(hooks[event]):
+            hooks[event] = filtered
+            changed = True
+        if not hooks[event]:
+            del hooks[event]
+    if changed:
+        save_claude_settings(settings, settings_path)
+
+
 def remove_member_files(project_root: Path, kind: str, item_id: str, tool: str) -> None:
     """Delete installed files for an asset only (does not change config)."""
     root = Path(project_root)
+
+    if kind == "hook":
+        dst = dest_path(root, kind, item_id, tool)
+        if dst.exists():
+            dst.unlink()
+        _remove_hook_from_settings(root, item_id)
+        return
+
     dst = dest_path(root, kind, item_id, tool)
 
     if dst.exists():

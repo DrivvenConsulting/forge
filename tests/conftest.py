@@ -22,6 +22,7 @@ def registry_root(tmp_path: Path) -> Path:
     (root / "skills").mkdir()
     (root / "bundles").mkdir()
     (root / "workflows").mkdir()
+    (root / "hooks").mkdir()
 
     agent_dir = root / "agents" / "test-agent"
     agent_dir.mkdir(parents=True)
@@ -59,6 +60,21 @@ def registry_root(tmp_path: Path) -> Path:
     bundle_dir.mkdir(parents=True)
     (bundle_dir / "manifest.yaml").write_text(
         "version: '1.0.0'\nproject_types: [backend, data]\nitems:\n  - kind: rule\n    id: test-rule\n  - kind: skill\n    id: test-skill\n",
+        encoding="utf-8",
+    )
+
+    hook_dir = root / "hooks" / "test-hook"
+    hook_dir.mkdir(parents=True)
+    (hook_dir / "manifest.yaml").write_text(
+        "version: '1.0.0'\nproject_types: [backend, data]\ndescription: Test hook\n",
+        encoding="utf-8",
+    )
+    (hook_dir / "HOOK.md").write_text("# Test Hook\n", encoding="utf-8")
+    scripts_dir = hook_dir / "scripts"
+    scripts_dir.mkdir()
+    (scripts_dir / "test-hook.sh").write_text("#!/bin/bash\necho hello\n", encoding="utf-8")
+    (hook_dir / "hooks.json").write_text(
+        '{"PostToolUse": [{"matcher": "Write", "hooks": [{"type": "command", "command": "\\"$CLAUDE_PROJECT_DIR\\"/.claude/hooks/test-hook.sh", "statusMessage": "Running test hook..."}]}]}',
         encoding="utf-8",
     )
 
