@@ -36,6 +36,8 @@ def dest_path(project_root: Path, kind: str, item_id: str, tool: str) -> Path:
         if tool != "claude-code":
             raise ValueError("Hooks are only supported for claude-code projects")
         return base / "hooks" / f"{item_id}.sh"
+    elif kind == "gh-action":
+        return project_root / ".github" / "workflows" / f"{item_id}.yml"
     raise ValueError(f"Invalid kind: {kind}")
 
 
@@ -118,6 +120,16 @@ def _install_hook(registry_root: Path, item: RegistryItem, project_root: Path, t
         save_claude_settings(settings, settings_path)
 
 
+def _copy_gh_action(registry_root: Path, item: RegistryItem, project_root: Path, tool: str) -> None:
+    """Copy GitHub Actions workflow YAML from assets/ to .github/workflows/."""
+    src = registry_root / item.path / "assets" / f"{item.id}.yml"
+    if not src.exists():
+        raise FileNotFoundError(f"Workflow YAML not found: {src}")
+    dest = dest_path(project_root, "gh-action", item.id, tool)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, dest)
+
+
 def _copy_prompt(registry_root: Path, item: RegistryItem, project_root: Path, tool: str) -> None:
     """Copy prompt .md file to the target prompts/commands directory."""
     src_file = registry_root / item.path
@@ -144,8 +156,10 @@ def copy_registry_item_to_project(
         _copy_prompt(registry_root, item, project_root, tool)
     elif item.kind == "hook":
         _install_hook(registry_root, item, project_root, tool)
+    elif item.kind == "gh-action":
+        _copy_gh_action(registry_root, item, project_root, tool)
     else:
-        raise ValueError(f"Expected agent, rule, skill, workflow, prompt, or hook; got {item.kind}")
+        raise ValueError(f"Expected agent, rule, skill, workflow, prompt, hook, or gh-action; got {item.kind}")
 
 
 def _install_single_item(
